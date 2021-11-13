@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+     Copyright (C) 2021 AOSP-Krypton Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="3dp"
+    android:paddingTop="2dp"
+    android:paddingEnd="3dp"
+    android:paddingBottom="1dp">
+
+    <TextView
+        android:id="@+id/pid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_mono_family"
+        android:maxLines="1"
+        android:paddingEnd="2dp"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="RtlSymmetry"
+        tools:text="1000" />
+
+    <TextView
+        android:id="@+id/timestamp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_mono_family"
+        android:maxLines="1"
+        android:paddingStart="2dp"
+        android:paddingEnd="2dp"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="@id/message"
+        app:layout_constraintStart_toStartOf="@id/message"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/pid"
+        tools:text="12 June 2011" />
+
+    <TextView
+        android:id="@+id/tag"
+        android:layout_width="64dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/pid"
+        android:ellipsize="marquee"
+        android:fontFamily="@font/roboto_mono_family"
+        android:paddingEnd="2dp"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="@id/pid"
+        app:layout_constraintEnd_toStartOf="@id/level"
+        app:layout_constraintTop_toBottomOf="@id/pid"
+        tools:ignore="RtlSymmetry"
+        tools:text="SomeActivity" />
+
+    <TextView
+        android:id="@+id/level"
+        android:layout_width="16dp"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_mono_family"
+        android:maxLines="1"
+        android:textAlignment="center"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@id/message"
+        app:layout_constraintStart_toEndOf="@id/tag"
+        app:layout_constraintEnd_toStartOf="@id/message"
+        app:layout_constraintTop_toTopOf="@id/message"
+        tools:text="D" />
+
+    <TextView
+        android:id="@+id/message"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/pid"
+        android:ellipsize="end"
+        android:fontFamily="@font/roboto_mono_family"
+        android:paddingStart="2dp"
+        android:paddingEnd="2dp"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/level"
+        app:layout_constraintTop_toBottomOf="@id/timestamp"
+        tools:text="Blah blah blah a bunch of output" />
+</androidx.constraintlayout.widget.ConstraintLayout>
