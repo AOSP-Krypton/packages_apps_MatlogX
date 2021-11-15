@@ -22,4 +22,20 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Background color for log level view -->
+    <color name="background_verbose">#FF666666</color>
+    <color name="background_debug">#FF0066CC</color>
+    <color name="background_info">#FF00CC00</color>
+    <color name="background_warn">#FFFFFF00</color>
+    <color name="background_error">#FFCC0000</color>
+    <color name="background_fatal">#FF999900</color>
+
+    <!-- Text color for tag view -->
+    <color name="foreground_verbose">@color/white</color>
+    <color name="foreground_debug">@color/white</color>
+    <color name="foreground_info">@color/black</color>
+    <color name="foreground_warn">@color/black</color>
+    <color name="foreground_error">@color/white</color>
+    <color name="foreground_fatal">@color/white</color>
 </resources>

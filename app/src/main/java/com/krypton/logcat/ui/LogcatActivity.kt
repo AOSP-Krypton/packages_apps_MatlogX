@@ -16,12 +16,16 @@
 
 package com.krypton.logcat.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import android.widget.ProgressBar
 
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
@@ -41,24 +45,40 @@ class LogcatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_logcat)
         setSupportActionBar(findViewById(R.id.toolbar))
-        setupListView()
-
         loadingProgressBar = findViewById(R.id.loading_progress_bar)
-        logcatViewModel.getLogcatLiveData().observe(this, {
-            loadingProgressBar.visibility = if (it.isEmpty()) View.VISIBLE else View.GONE
-            logcatListAdapter.submitList(it)
-        })
     }
 
     override fun onStart() {
         super.onStart()
-        logcatViewModel.readLogcat()
+        val status = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_LOGS)
+        if (status == PackageManager.PERMISSION_DENIED) {
+            showPermissionHelperDialog()
+        } else {
+            setupListView()
+            logcatViewModel.getLogcatLiveData().observe(this, {
+                loadingProgressBar.visibility = if (it.isEmpty()) View.VISIBLE else View.GONE
+                logcatListAdapter.submitList(it)
+            })
+        }
+    }
+
+    private fun showPermissionHelperDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.grant_permissions)
+            .setMessage(R.string.how_to_grant)
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+                finish()
+            }
+            .setCancelable(false)
+            .show()
     }
 
     private fun setupListView() {
         logcatListView = findViewById(R.id.log_list)
         logcatListView.layoutManager = LinearLayoutManager(this)
-        logcatListAdapter = LogcatListAdapter()
+        logcatListAdapter = LogcatListAdapter(this)
         logcatListView.adapter = logcatListAdapter
+        logcatListView.itemAnimator = null
     }
 }

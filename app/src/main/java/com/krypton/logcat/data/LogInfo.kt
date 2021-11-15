@@ -16,6 +16,15 @@
 
 package com.krypton.logcat.data
 
+/**
+ * Data class representing a line from logcat.
+ *
+ * @property pid process id of the program that logged this entry.
+ * @property timestamp time (format MM-dd HH:MM:ss.SSS) at which this entry was logged.
+ * @property tag the log tag of this entry.
+ * @property level the log level of this entry (one of [Level]).
+ * @property message the message that was logged.
+ */
 data class LogInfo(
     val pid: Int,
     val timestamp: String,
@@ -25,11 +34,12 @@ data class LogInfo(
 ) {
     enum class Level {
         VERBOSE,
-        INFO,
         DEBUG,
+        INFO,
+        WARN,
         ERROR,
-        WTF;
+        FATAL;
 
-        fun toLetter() = toString()[0].toString()
+        fun toChar() = name[0].toString()
     }
 }

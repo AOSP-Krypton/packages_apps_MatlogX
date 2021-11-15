@@ -16,6 +16,8 @@
 
 package com.krypton.logcat.viewmodel
 
+import android.os.CancellationSignal
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -25,7 +27,8 @@ import com.krypton.logcat.data.LogInfo
 import com.krypton.logcat.repo.LogcatRepository
 
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
@@ -36,17 +39,49 @@ class LogcatViewModel @Inject constructor(
     private val logcatRepository: LogcatRepository
 ) : ViewModel() {
 
-    private val logcatLiveData: MutableLiveData<List<LogInfo>> = MutableLiveData()
+    private val logcatLiveData = MutableLiveData<List<LogInfo>>()
     private val logList = mutableListOf<LogInfo>()
+    private var cancellationSignal = CancellationSignal()
+    private var job: Job? = null
 
-    fun getLogcatLiveData() = logcatLiveData as LiveData<List<LogInfo>>
+    init {
+        // Start reading on init
+        startReadingLogcat()
+    }
 
-    fun readLogcat() {
-        viewModelScope.launch(Dispatchers.IO){
-            logcatRepository.getLogcatStream().collect {
+    /**
+     * Get a [LiveData] for view to observe.
+     *
+     * @return [LiveData] of a [List] of [LogInfo].
+     */
+    fun getLogcatLiveData(): LiveData<List<LogInfo>> = logcatLiveData
+
+    /**
+     * Subscribe to the [LogInfo] flow from [LogcatRepository].
+     * TODO Make this function public when floating action button code is implemented
+     */
+    private fun startReadingLogcat() {
+        cancellationSignal = CancellationSignal()
+        job = viewModelScope.launch {
+            logcatRepository.getLogcatStream(cancellationSignal).collect {
                 logList.add(it)
-                logcatLiveData.postValue(logList)
+                logcatLiveData.value = logList.toList()
             }
         }
+    }
+
+    /**
+     * Terminate any existing subscriptions that are
+     * subscribed to the [LogInfo] flow from [LogcatRepository].
+     * TODO Make this function public when floating action button code is implemented
+     */
+    private fun stopReadingLogcat() {
+        cancellationSignal.cancel()
+        job?.cancel()
+    }
+
+    override fun onCleared() {
+        stopReadingLogcat()
+        super.onCleared()
     }
 }

@@ -18,6 +18,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.krypton.logcat">
 
+    <uses-permission android:name="android.permission.READ_LOGS"
+        tools:ignore="ProtectedPermissions" />
+
     <application
         android:name=".LogcatApp"
         android:icon="@mipmap/ic_launcher"

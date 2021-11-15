@@ -16,29 +16,35 @@
 
 package com.krypton.logcat.repo
 
+import android.os.CancellationSignal
 import com.krypton.logcat.data.LogInfo
+import com.krypton.logcat.reader.LogcatReader
+import com.krypton.logcat.util.SettingsHelper
 
 import javax.inject.Inject
 import javax.inject.Singleton
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 
 @Singleton
-class LogcatRepository @Inject constructor() {
+class LogcatRepository @Inject constructor(
+    private val settingsHelper: SettingsHelper,
+) {
 
     /**
-     * Get a stream of logs from logcat
+     * Get an asynchronous stream of [LogInfo].
+     *
+     * @param cancellationSignal to terminate the flow.
+     * @return a flow of [LogInfo].
      */
-    fun getLogcatStream(): Flow<LogInfo> = flow {
-        // TODO: remove this dummy simulation once logcat is actually fetched
-        kotlinx.coroutines.delay(3000L)
-        emit(LogInfo(
-            1000,
-            "2021",
-            "AReallyLongTag",
-            LogInfo.Level.VERBOSE,
-            "Something that is not lorem ipsum",
-        ))
+    fun getLogcatStream(cancellationSignal: CancellationSignal): Flow<LogInfo> {
+        val logcatReader = LogcatReader()
+        return logcatReader.read(
+            cancellationSignal,
+            args = settingsHelper.getArgsFromUserSettings(),
+            tags = null,
+        )
     }
+
+
 }
