@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.krypton.logcat.ui
+package com.krypton.matlogx.ui
 
 import android.view.View
 import android.widget.TextView
 
 import androidx.recyclerview.widget.RecyclerView
 
-import com.krypton.logcat.R
+import com.krypton.matlogx.R
 
 class LogcatListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val pidView: TextView = itemView.findViewById(R.id.pid)

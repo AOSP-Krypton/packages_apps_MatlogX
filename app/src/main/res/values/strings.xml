@@ -15,7 +15,7 @@
      limitations under the License.
 -->
 <resources>
-    <string name="app_name">Logcat</string>
+    <string name="app_name">MatlogX</string>
     <string name="logcat_play_or_pause">Logcat play or pause button</string>
     <string name="grant_permissions">Grant permissions</string>
     <string name="how_to_grant">

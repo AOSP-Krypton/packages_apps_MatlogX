@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.krypton.logcat.repo
+package com.krypton.matlogx.repo
 
 import android.os.CancellationSignal
 
-import com.krypton.logcat.data.LogInfo
-import com.krypton.logcat.reader.LogcatReader
-import com.krypton.logcat.util.SettingsHelper
+import com.krypton.matlogx.data.LogInfo
+import com.krypton.matlogx.reader.LogcatReader
+import com.krypton.matlogx.util.SettingsHelper
 
 import javax.inject.Inject
 import javax.inject.Singleton

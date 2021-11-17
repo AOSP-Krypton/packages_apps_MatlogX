@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.krypton.logcat.data
+package com.krypton.matlogx.data
 
 /**
  * Data class representing a line from logcat.

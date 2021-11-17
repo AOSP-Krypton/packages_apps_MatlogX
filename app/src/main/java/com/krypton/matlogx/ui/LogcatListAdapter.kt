@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.krypton.logcat.ui
+package com.krypton.matlogx.ui
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -23,8 +23,8 @@ import android.view.ViewGroup
 
 import androidx.recyclerview.widget.RecyclerView
 
-import com.krypton.logcat.R
-import com.krypton.logcat.data.LogInfo
+import com.krypton.matlogx.R
+import com.krypton.matlogx.data.LogInfo
 
 class LogcatListAdapter(context: Context) : RecyclerView.Adapter<LogcatListViewHolder>() {
 

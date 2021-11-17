@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.krypton.logcat.reader
+package com.krypton.matlogx.reader
 
 import android.os.CancellationSignal
 
-import com.krypton.logcat.data.LogInfo
+import com.krypton.matlogx.data.LogInfo
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

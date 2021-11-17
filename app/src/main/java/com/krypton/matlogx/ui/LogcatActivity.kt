@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.krypton.logcat.ui
+package com.krypton.matlogx.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -30,8 +30,8 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-import com.krypton.logcat.R
-import com.krypton.logcat.viewmodel.LogcatViewModel
+import com.krypton.matlogx.R
+import com.krypton.matlogx.viewmodel.LogcatViewModel
 
 import dagger.hilt.android.AndroidEntryPoint
 

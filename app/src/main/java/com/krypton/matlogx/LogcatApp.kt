@@ -1,4 +1,4 @@
-package com.krypton.logcat
+package com.krypton.matlogx
 
 import android.app.Application
 

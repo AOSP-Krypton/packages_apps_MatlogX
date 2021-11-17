@@ -1,6 +1,6 @@
-package com.krypton.logcat.util
+package com.krypton.matlogx.util
 
-import com.krypton.logcat.reader.LogcatReader
+import com.krypton.matlogx.reader.LogcatReader
 
 import javax.inject.Inject
 

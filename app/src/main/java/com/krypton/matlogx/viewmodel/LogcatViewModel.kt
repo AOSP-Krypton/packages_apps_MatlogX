@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.krypton.logcat.viewmodel
+package com.krypton.matlogx.viewmodel
 
 import android.os.CancellationSignal
 
@@ -23,8 +23,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 
-import com.krypton.logcat.data.LogInfo
-import com.krypton.logcat.repo.LogcatRepository
+import com.krypton.matlogx.data.LogInfo
+import com.krypton.matlogx.repo.LogcatRepository
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 
