@@ -21,6 +21,6 @@
     <string name="how_to_grant">
         App requires READ_LOGS permission to read system logcat.\n
         To grant the permission, open adb and enter the following command (without quotes):\n
-        \"adb shell pm grant com.krypton.logcat android.permission.READ_LOGS\".
+        "adb shell pm grant com.krypton.logcat android.permission.READ_LOGS".
     </string>
 </resources>
