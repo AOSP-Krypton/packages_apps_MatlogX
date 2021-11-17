@@ -42,11 +42,25 @@ class LogcatViewModel @Inject constructor(
     private val logcatLiveData = MutableLiveData<List<LogInfo>>()
     private val logList = mutableListOf<LogInfo>()
     private var cancellationSignal = CancellationSignal()
-    private var job: Job? = null
+    private var job: Job
+
+    // Whether livedata should be updated when new log info is collected from repository
+    private var logcatUpdatePaused = false
+    private val pauseButtonLiveData = MutableLiveData(logcatUpdatePaused)
+
+    // Whether we should scroll to the bottom automatically
+    // when new log info is added to the list
+    var autoScroll = true
 
     init {
         // Start reading on init
-        startReadingLogcat()
+        job = viewModelScope.launch {
+            val size = logcatRepository.getCurrentLogcatSize()
+            logcatRepository.getLogcatStream(cancellationSignal).collect {
+                logList.add(it)
+                if (!logcatUpdatePaused && logList.size > size) logcatLiveData.value = logList.toList()
+            }
+        }
     }
 
     /**
@@ -57,31 +71,24 @@ class LogcatViewModel @Inject constructor(
     fun getLogcatLiveData(): LiveData<List<LogInfo>> = logcatLiveData
 
     /**
-     * Subscribe to the [LogInfo] flow from [LogcatRepository].
-     * TODO Make this function public when floating action button code is implemented
+     * Get the state of pause button as a [LiveData].
+     * State is false if logcat stream is paused and vice versa
+     *
+     * @return [LiveData] of state variable.
      */
-    private fun startReadingLogcat() {
-        cancellationSignal = CancellationSignal()
-        job = viewModelScope.launch {
-            logcatRepository.getLogcatStream(cancellationSignal).collect {
-                logList.add(it)
-                logcatLiveData.value = logList.toList()
-            }
-        }
-    }
+    fun getPauseButtonState(): LiveData<Boolean> = pauseButtonLiveData
 
     /**
-     * Terminate any existing subscriptions that are
-     * subscribed to the [LogInfo] flow from [LogcatRepository].
-     * TODO Make this function public when floating action button code is implemented
+     * Toggle the state of the pause button.
      */
-    private fun stopReadingLogcat() {
-        cancellationSignal.cancel()
-        job?.cancel()
+    fun togglePauseButtonState() {
+        logcatUpdatePaused = !logcatUpdatePaused
+        pauseButtonLiveData.value = logcatUpdatePaused
     }
 
     override fun onCleared() {
-        stopReadingLogcat()
+        cancellationSignal.cancel()
+        job.cancel()
         super.onCleared()
     }
 }

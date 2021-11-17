@@ -20,6 +20,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageButton
 import android.widget.ProgressBar
 
 import androidx.activity.viewModels
@@ -36,16 +37,22 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class LogcatActivity : AppCompatActivity() {
+
     private val logcatViewModel: LogcatViewModel by viewModels()
     private lateinit var logcatListView: RecyclerView
     private lateinit var logcatListAdapter: LogcatListAdapter
+    private lateinit var logcatLayoutManager: LinearLayoutManager
     private lateinit var loadingProgressBar: ProgressBar
+    private lateinit var pauseButton: ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_logcat)
         setSupportActionBar(findViewById(R.id.toolbar))
         loadingProgressBar = findViewById(R.id.loading_progress_bar)
+        pauseButton = findViewById<ImageButton>(R.id.pause_button).apply {
+            setOnClickListener { logcatViewModel.togglePauseButtonState() }
+        }
     }
 
     override fun onStart() {
@@ -55,10 +62,19 @@ class LogcatActivity : AppCompatActivity() {
             showPermissionHelperDialog()
         } else {
             setupListView()
-            logcatViewModel.getLogcatLiveData().observe(this, {
+            logcatViewModel.getLogcatLiveData().observe(this) {
                 loadingProgressBar.visibility = if (it.isEmpty()) View.VISIBLE else View.GONE
                 logcatListAdapter.submitList(it)
-            })
+                if (logcatViewModel.autoScroll) logcatListView.scrollToPosition(it.size - 1)
+            }
+            logcatViewModel.getPauseButtonState().observe(this) {
+                if (it) {
+                    pauseButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+                } else {
+                    pauseButton.setImageResource(R.drawable.ic_baseline_pause_24)
+                    logcatListView.scrollToPosition(logcatListAdapter.itemCount - 1)
+                }
+            }
         }
     }
 
@@ -75,10 +91,20 @@ class LogcatActivity : AppCompatActivity() {
     }
 
     private fun setupListView() {
-        logcatListView = findViewById(R.id.log_list)
-        logcatListView.layoutManager = LinearLayoutManager(this)
         logcatListAdapter = LogcatListAdapter(this)
-        logcatListView.adapter = logcatListAdapter
-        logcatListView.itemAnimator = null
+        logcatLayoutManager = LinearLayoutManager(this)
+        logcatListView = findViewById<RecyclerView>(R.id.log_list).apply {
+            setHasFixedSize(true)
+            layoutManager = logcatLayoutManager
+            adapter = logcatListAdapter
+            itemAnimator = null
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    logcatViewModel.autoScroll =
+                        logcatLayoutManager.findLastCompletelyVisibleItemPosition() == logcatListAdapter.itemCount - 1
+                }
+            })
+        }
     }
 }

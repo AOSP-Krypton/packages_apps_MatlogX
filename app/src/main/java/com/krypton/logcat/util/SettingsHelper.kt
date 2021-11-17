@@ -15,11 +15,11 @@ class SettingsHelper @Inject constructor() {
      * an argument to [LogcatReader.read].
      * TODO fetch it from preferences when UI is set up for selecting args.
      *
-     * @return map of option [LogcatArg] to it's value [String]
+     * @return map of options to it's values
      */
-    fun getArgsFromUserSettings(): Map<LogcatReader.Args, String?> {
+    fun getArgsFromUserSettings(): Map<String, String?> {
         return mapOf(
-            LogcatReader.Args.BUFFER to "all",
+            LogcatReader.Args.OPTION_BUFFER to LogcatReader.Args.BUFFER_ALL,
         )
     }
 }

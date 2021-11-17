@@ -17,6 +17,7 @@
 package com.krypton.logcat.repo
 
 import android.os.CancellationSignal
+
 import com.krypton.logcat.data.LogInfo
 import com.krypton.logcat.reader.LogcatReader
 import com.krypton.logcat.util.SettingsHelper
@@ -46,5 +47,10 @@ class LogcatRepository @Inject constructor(
         )
     }
 
-
+    /**
+     * Query the total number of lines in the logcat buffer
+     *
+     * @return the total number of lines in all of the logcat buffer
+     */
+    suspend fun getCurrentLogcatSize(): Int = LogcatReader().getSize()
 }

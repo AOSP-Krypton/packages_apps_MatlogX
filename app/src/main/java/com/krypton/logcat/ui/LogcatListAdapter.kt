@@ -18,6 +18,7 @@ package com.krypton.logcat.ui
 
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 
 import androidx.recyclerview.widget.RecyclerView
@@ -56,14 +57,21 @@ class LogcatListAdapter(context: Context) : RecyclerView.Adapter<LogcatListViewH
     override fun onBindViewHolder(holder: LogcatListViewHolder, position: Int) {
         val logInfo = getItem(position)
         with(holder) {
-            pidView.text = logInfo.pid.toString()
-            timestampView.text = logInfo.timestamp
-            tagView.text = logInfo.tag
-            levelView.text = logInfo.level.toChar()
-            levelView.setBackgroundColor(getLogLevelBgColor(logInfo.level))
-            levelView.setTextColor(getLogLevelFgColor(logInfo.level))
+            if (logInfo.level == LogInfo.Level.UNKNOWN) {
+                pidView.visibility = View.GONE
+                timestampView.visibility = View.GONE
+                tagView.visibility = View.GONE
+                levelView.visibility = View.GONE
+            } else {
+                pidView.text = logInfo.pid.toString()
+                timestampView.text = logInfo.timestamp
+                tagView.text = logInfo.tag
+                levelView.text = logInfo.level.toChar()
+                levelView.setBackgroundColor(getLogLevelBgColor(logInfo.level))
+                levelView.setTextColor(getLogLevelFgColor(logInfo.level))
+                itemView.setOnClickListener { holder.toggleExpandedState() }
+            }
             messageView.text = logInfo.message
-            itemView.setOnClickListener { holder.toggleExpandedState() }
         }
     }
 

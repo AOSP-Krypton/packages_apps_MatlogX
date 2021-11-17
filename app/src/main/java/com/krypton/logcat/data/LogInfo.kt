@@ -26,13 +26,17 @@ package com.krypton.logcat.data
  * @property message the message that was logged.
  */
 data class LogInfo(
-    val pid: Int,
-    val timestamp: String,
-    val tag: String,
-    val level: Level,
-    val message: String,
+    val pid: Int = -1,
+    val timestamp: String = "",
+    val tag: String = "",
+    val level: Level = Level.UNKNOWN,
+    val message: String = "",
 ) {
     enum class Level {
+        // For logs with only messages
+        UNKNOWN {
+            override fun toChar() = ""
+        },
         VERBOSE,
         DEBUG,
         INFO,
@@ -40,6 +44,8 @@ data class LogInfo(
         ERROR,
         FATAL;
 
-        fun toChar() = name[0].toString()
+        open fun toChar() = name[0].toString()
     }
+
+    fun hasOnlyMessage() = level == Level.UNKNOWN
 }
