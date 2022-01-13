@@ -30,23 +30,32 @@ class LogcatListAdapter(context: Context) : ListAdapter<LogInfo, LogcatListViewH
 
     private val layoutInflater = LayoutInflater.from(context)
 
-    // Background & Foreground color maps for different log levels
-    private val bgColorMap = mapOf(
-        'V' to context.getColor(R.color.background_verbose),
-        'D' to context.getColor(R.color.background_debug),
-        'I' to context.getColor(R.color.background_info),
-        'W' to context.getColor(R.color.background_warn),
-        'E' to context.getColor(R.color.background_error),
-        'F' to context.getColor(R.color.background_fatal),
-    )
-
-    private val fgColorMap = mapOf(
-        'V' to context.getColor(R.color.foreground_verbose),
-        'D' to context.getColor(R.color.foreground_debug),
-        'I' to context.getColor(R.color.foreground_info),
-        'W' to context.getColor(R.color.foreground_warn),
-        'E' to context.getColor(R.color.foreground_error),
-        'F' to context.getColor(R.color.foreground_fatal),
+    // Background & Foreground color map for different log levels
+    private val colorMap = mapOf(
+        'V' to Pair(
+            context.getColor(R.color.background_verbose),
+            context.getColor(R.color.foreground_verbose)
+        ),
+        'D' to Pair(
+            context.getColor(R.color.background_debug),
+            context.getColor(R.color.foreground_debug)
+        ),
+        'I' to Pair(
+            context.getColor(R.color.background_info),
+            context.getColor(R.color.foreground_info)
+        ),
+        'W' to Pair(
+            context.getColor(R.color.background_warn),
+            context.getColor(R.color.foreground_warn)
+        ),
+        'E' to Pair(
+            context.getColor(R.color.background_error),
+            context.getColor(R.color.foreground_error)
+        ),
+        'F' to Pair(
+            context.getColor(R.color.background_fatal),
+            context.getColor(R.color.foreground_fatal)
+        ),
     )
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LogcatListViewHolder {
@@ -59,8 +68,9 @@ class LogcatListAdapter(context: Context) : ListAdapter<LogInfo, LogcatListViewH
         holder.apply {
             setLogInfo(logInfo)
             if (!logInfo.hasOnlyMessage()) {
-                levelView.setBackgroundColor(bgColorMap[logInfo.level]!!)
-                levelView.setTextColor(fgColorMap[logInfo.level]!!)
+                val color = colorMap[logInfo.level]!!
+                levelView.setBackgroundColor(color.first)
+                levelView.setTextColor(color.second)
             }
         }
     }
