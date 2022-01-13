@@ -22,7 +22,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.SearchRecentSuggestions
-import android.view.*
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.ProgressBar
 import android.widget.SearchView
 
@@ -34,8 +36,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.krypton.matlogx.R
 import com.krypton.matlogx.provider.SuggestionProvider
 import com.krypton.matlogx.viewmodel.LogcatViewModel

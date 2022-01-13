@@ -37,18 +37,20 @@ class LogcatReader {
      *
      * @param args command line arguments for logcat.
      * @param tags a list of string tags to filter the logs.
-     * @param query string to filter the logs
+     * @param query string to filter the logs.
+     * @param limit maximum number of logs to request.
      * @return a [Flow] of [LogInfo].
      */
     fun read(
         args: Map<String, String?>? = null,
         tags: List<String>? = null,
         query: String?,
+        limit: Int,
     ): Flow<LogInfo> {
         val process = ProcessBuilder(
             LOGCAT_BIN,
             "--format=time,usec",
-            "-T", "1000",
+            "-T", limit.toString(),
             flattenArgsToString(args),
             flattenTagsToString(tags)
         ).start()

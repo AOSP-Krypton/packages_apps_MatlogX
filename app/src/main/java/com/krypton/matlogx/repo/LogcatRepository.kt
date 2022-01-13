@@ -42,6 +42,7 @@ class LogcatRepository @Inject constructor(
             args = settingsHelper.getLogcatArgs(),
             tags = null,
             query,
+            getLogcatSizeLimit(),
         )
     }
 
