@@ -46,6 +46,9 @@ class LogcatListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     }
 
     fun setLogInfo(logInfo: LogInfo) {
+        if (this.logInfo != logInfo && isExpanded) {
+            isExpanded = false
+        }
         if (logInfo.hasOnlyMessage()) {
             pidView.visibility = View.GONE
             timestampView.visibility = View.GONE
