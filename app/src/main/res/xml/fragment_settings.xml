@@ -14,20 +14,5 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <item android:id="@+id/search_button"
-        android:title="@string/search"
-        app:actionViewClass="android.widget.SearchView"
-        app:showAsAction="ifRoom" />
-
-    <item android:id="@+id/pause_button"
-        android:title="@string/pause"
-        app:showAsAction="ifRoom" />
-
-    <item android:id="@+id/settings"
-        android:title="@string/settings"
-        app:showAsAction="never" />
-
-</menu>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/settings" />

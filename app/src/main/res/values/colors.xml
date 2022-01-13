@@ -16,7 +16,8 @@
 -->
 <resources>
     <color name="launcher_background">@android:color/white</color>
-    <color name="accent">#FF448AFF</color>
+    <color name="accent_light">#FF0045BD</color>
+    <color name="accent_dark">#FF448AFF</color>
 
     <!-- Background color for log level view -->
     <color name="background_verbose">#FF666666</color>

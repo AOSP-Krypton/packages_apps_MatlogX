@@ -157,6 +157,10 @@ class LogcatActivity : AppCompatActivity() {
                 }
                 true
             }
+            R.id.settings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
 
