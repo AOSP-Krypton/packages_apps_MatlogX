@@ -23,6 +23,9 @@ import androidx.appcompat.widget.Toolbar
 
 import com.krypton.matlogx.R
 
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
 class SettingsActivity: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

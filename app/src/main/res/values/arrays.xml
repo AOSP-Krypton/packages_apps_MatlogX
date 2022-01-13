@@ -14,19 +14,12 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    android:title="@string/settings">
-
-    <PreferenceCategory android:title="@string/configuration">
-
-        <MultiSelectListPreference
-            android:entries="@array/buffers"
-            android:entryValues="@array/buffers"
-            android:key="buffer"
-            android:title="@string/log_buffers" />
-
-        <EditTextPreference
-            android:key="log_display_limit"
-            android:title="@string/log_display_limit" />
-    </PreferenceCategory>
-</PreferenceScreen>
+<resources>
+    <array name="buffers">
+        <item>main</item>
+        <item>system</item>
+        <item>radio</item>
+        <item>events</item>
+        <item>crash</item>
+    </array>
+</resources>

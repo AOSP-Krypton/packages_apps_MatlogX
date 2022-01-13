@@ -37,9 +37,12 @@ class LogcatRepository @Inject constructor(
      * @return a flow of [LogInfo].
      */
     fun getLogcatStream(query: String?): Flow<LogInfo> {
+        val args = mapOf<String, String?>(
+            LogcatReader.OPTION_BUFFER to settingsHelper.getLogcatBuffers().joinToString(",")
+        )
         val logcatReader = LogcatReader()
         return logcatReader.read(
-            args = settingsHelper.getLogcatArgs(),
+            args = args,
             tags = null,
             query,
             getLogcatSizeLimit(),

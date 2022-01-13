@@ -19,7 +19,10 @@ package com.krypton.matlogx.util
 import android.content.Context
 import android.content.SharedPreferences
 
+import androidx.core.content.edit
+
 import com.krypton.matlogx.reader.LogcatReader
+
 import dagger.hilt.android.qualifiers.ApplicationContext
 
 import javax.inject.Inject
@@ -39,19 +42,13 @@ class SettingsHelper @Inject constructor(
         )
     }
 
-    /**
-     * Get user selected arguments to pass as
-     * an argument to [LogcatReader.read].
-     *
-     * @return map of options to it's values.
-     */
-    fun getLogcatArgs(): Map<String, String?> {
-        return mapOf(
-            LogcatReader.OPTION_BUFFER to sharedPreferences.getString(
-                PREF_KEY_LOGCAT_BUFFER,
-                LogcatReader.BUFFER_ALL
-            ),
-        )
+    fun getLogcatBuffers(): Set<String> =
+        sharedPreferences.getStringSet(PREF_KEY_LOGCAT_BUFFER, PREF_KEY_LOGCAT_BUFFER_DEFAULT)!!
+
+    fun setLogcatBuffers(buffers: Set<String>) {
+        sharedPreferences.edit(commit = true) {
+            putStringSet(PREF_KEY_LOGCAT_BUFFER, buffers)
+        }
     }
 
     /**
@@ -61,11 +58,23 @@ class SettingsHelper @Inject constructor(
      */
     fun getLogSizeLimit() = sharedPreferences.getInt(PREF_KEY_LOG_SIZE_LIMIT, LOG_SIZE_DEFAULT)
 
+    /**
+     * Saves the limit for number of log lines to keep inside [SharedPreferences].
+     *
+     * @param limit the value to save.
+     */
+    fun setLogSizeLimit(limit: Int) {
+        sharedPreferences.edit(commit = true) {
+            putInt(PREF_KEY_LOG_SIZE_LIMIT, limit)
+        }
+    }
+
     companion object {
         private const val PREF_FILE_NAME = "matlogx_shared_preferences"
 
         private const val PREF_KEY_LOGCAT_ARG_PREFIX = "key_logcat_arg_"
         private const val PREF_KEY_LOGCAT_BUFFER = "${PREF_KEY_LOGCAT_ARG_PREFIX}buffer"
+        private val PREF_KEY_LOGCAT_BUFFER_DEFAULT = setOf("main", "system", "crash")
 
         private const val PREF_KEY_LOG_SIZE_LIMIT = "key_log_size_limit"
         const val LOG_SIZE_DEFAULT = 8000
