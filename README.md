@@ -1,8 +1,8 @@
 ![Icon](./app/src/main/res/mipmap-hdpi/ic_launcher.png)MatlogX
 =========
-Based on [Matlog link](https://github.com/plusCubed/matlog).
+A graphical log reader for Android.
 
-Graphical log reader for Android.
+Based on [Matlog](https://github.com/plusCubed/matlog) but completely rewritten in kotlin, following the mvvm android design architecture.
 
 Overview
 ---------
