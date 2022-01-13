@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="FFButtonStyle" parent="ShapeAppearanceOverlay.MaterialComponents.FloatingActionButton">
+        <item name="android:src">@drawable/ic_baseline_double_arrow_24</item>
+        <item name="android:backgroundTint">@color/accent</item>
+        <item name="tint">@android:color/white</item>
+        <item name="fabCustomSize">32dp</item>
+        <item name="borderWidth">0dp</item>
+    </style>
+</resources>

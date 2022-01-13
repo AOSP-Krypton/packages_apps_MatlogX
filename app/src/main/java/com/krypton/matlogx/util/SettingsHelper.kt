@@ -68,7 +68,6 @@ class SettingsHelper @Inject constructor(
         private const val PREF_KEY_LOGCAT_BUFFER = "${PREF_KEY_LOGCAT_ARG_PREFIX}buffer"
 
         private const val PREF_KEY_LOG_SIZE_LIMIT = "key_log_size_limit"
-        private const val PREF_KEY_CACHED_LOG_SIZE_LIMIT = "key_cached_log_size_limit"
         const val LOG_SIZE_DEFAULT = 1000
     }
 }

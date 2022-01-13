@@ -27,4 +27,6 @@
     <string name="search">Search</string>
     <string name="search_hint">Search logs</string>
     <string name="string_not_found_in_logs">String not found in logs</string>
+    <string name="fast_scroll_to_bottom_button">Fast scroll to bottom button</string>
+    <string name="fast_scroll_to_top_button">Fast scroll to top button</string>
 </resources>

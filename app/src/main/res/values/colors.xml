@@ -15,11 +15,8 @@
      limitations under the License.
 -->
 <resources>
-    <color name="launcher_background">#FFFFFFFF</color>
-    <color name="primary">#FF448AFF</color>
+    <color name="launcher_background">@android:color/white</color>
     <color name="accent">#FF448AFF</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
 
     <!-- Background color for log level view -->
     <color name="background_verbose">#FF666666</color>
@@ -30,10 +27,10 @@
     <color name="background_fatal">#FF999900</color>
 
     <!-- Text color for tag view -->
-    <color name="foreground_verbose">@color/white</color>
-    <color name="foreground_debug">@color/white</color>
-    <color name="foreground_info">@color/black</color>
-    <color name="foreground_warn">@color/black</color>
-    <color name="foreground_error">@color/white</color>
-    <color name="foreground_fatal">@color/white</color>
+    <color name="foreground_verbose">@android:color/white</color>
+    <color name="foreground_debug">@android:color/white</color>
+    <color name="foreground_info">@android:color/black</color>
+    <color name="foreground_warn">@android:color/black</color>
+    <color name="foreground_error">@android:color/white</color>
+    <color name="foreground_fatal">@android:color/white</color>
 </resources>

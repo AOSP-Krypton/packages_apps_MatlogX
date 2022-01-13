@@ -48,6 +48,7 @@ class LogcatReader {
         val process = ProcessBuilder(
             LOGCAT_BIN,
             "--format=time,usec",
+            "-T", "1000",
             flattenArgsToString(args),
             flattenTagsToString(tags)
         ).start()

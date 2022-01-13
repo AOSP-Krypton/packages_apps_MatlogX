@@ -34,6 +34,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 import com.krypton.matlogx.R
 import com.krypton.matlogx.provider.SuggestionProvider
@@ -51,8 +52,11 @@ class LogcatActivity : AppCompatActivity() {
     private lateinit var loadingProgressBar: ProgressBar
     private lateinit var searchView: SearchView
     private lateinit var toolbar: Toolbar
+    private lateinit var topScrollButton: FloatingActionButton
+    private lateinit var bottomScrollButton: FloatingActionButton
 
     private var scrolledToBottomInitial = false
+    private var internalScroll = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +64,22 @@ class LogcatActivity : AppCompatActivity() {
         toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
         loadingProgressBar = findViewById(R.id.loading_progress_bar)
+        topScrollButton = findViewById<FloatingActionButton>(R.id.top_scroll_button).apply {
+            setOnClickListener {
+                hide()
+                internalScroll = true
+                logcatListView.scrollToPosition(0)
+            }
+        }
+        bottomScrollButton = findViewById<FloatingActionButton>(R.id.bottom_scroll_button).apply {
+            setOnClickListener {
+                hide()
+                if (logcatListAdapter.itemCount > 0) {
+                    internalScroll = true
+                    logcatListView.scrollToPosition(logcatListAdapter.itemCount - 1)
+                }
+            }
+        }
     }
 
     override fun onStart() {
@@ -74,6 +94,7 @@ class LogcatActivity : AppCompatActivity() {
                 logcatListAdapter.submitList(it)
                 if (logcatListAdapter.itemCount > 0 && (!scrolledToBottomInitial || logcatViewModel.autoScroll)) {
                     scrolledToBottomInitial = true
+                    internalScroll = true
                     logcatListView.scrollToPosition(logcatListAdapter.itemCount - 1)
                 }
             }
@@ -94,29 +115,20 @@ class LogcatActivity : AppCompatActivity() {
             else
                 R.drawable.ic_baseline_pause_24
         )
-        val searchButton = menu.findItem(R.id.search_button).also {
-            it.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-                override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
-                    toolbar.title = null
-                    return true
-                }
-
-                override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
-                    toolbar.setTitle(R.string.app_name)
-                    return true
-                }
-            })
-        }
         val searchManager = getSystemService(SearchManager::class.java)
-        searchView = (searchButton.actionView as SearchView).also {
+        searchView = (menu.findItem(R.id.search_button).actionView as SearchView).also {
             it.setSearchableInfo(
                 searchManager.getSearchableInfo(
                     componentName
                 )
             )
             it.setOnCloseListener {
+                toolbar.setTitle(R.string.app_name)
                 logcatViewModel.handleSearch(null)
                 false
+            }
+            it.setOnSearchClickListener {
+                toolbar.title = null
             }
         }
         handleSearchIntent(intent)
@@ -181,12 +193,41 @@ class LogcatActivity : AppCompatActivity() {
             adapter = logcatListAdapter
             itemAnimator = null
             addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                    super.onScrollStateChanged(recyclerView, newState)
+                    logcatViewModel.autoScroll =
+                        newState == RecyclerView.SCROLL_STATE_IDLE && isLastItemVisible()
+                }
+
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     super.onScrolled(recyclerView, dx, dy)
-                    logcatViewModel.autoScroll =
-                        logcatLayoutManager.findLastCompletelyVisibleItemPosition() == logcatListAdapter.itemCount - 1
+                    if (!internalScroll) {
+                        if (dy < -2) {
+                            if (isFirstItemVisible()) {
+                                topScrollButton.hide()
+                            } else {
+                                topScrollButton.show()
+                            }
+                            bottomScrollButton.hide()
+                        } else if (dy > 2) {
+                            topScrollButton.hide()
+                            if (isLastItemVisible()) {
+                                bottomScrollButton.hide()
+                            } else {
+                                bottomScrollButton.show()
+                            }
+                        }
+                    } else {
+                        internalScroll = false
+                    }
                 }
             })
         }
     }
+
+    private fun isFirstItemVisible() =
+        logcatLayoutManager.findFirstCompletelyVisibleItemPosition() == 0
+
+    private fun isLastItemVisible() =
+        logcatLayoutManager.findLastCompletelyVisibleItemPosition() == logcatListAdapter.itemCount - 1
 }
