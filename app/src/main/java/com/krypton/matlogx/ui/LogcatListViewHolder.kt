@@ -22,29 +22,48 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 import com.krypton.matlogx.R
+import com.krypton.matlogx.data.LogInfo
 
 class LogcatListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    val pidView: TextView = itemView.findViewById(R.id.pid)
-    val timestampView: TextView = itemView.findViewById(R.id.timestamp)
-    val tagView: TextView = itemView.findViewById(R.id.tag)
+    private val pidView: TextView = itemView.findViewById(R.id.pid)
+    private val timestampView: TextView = itemView.findViewById(R.id.timestamp)
+    private val tagView: TextView = itemView.findViewById(R.id.tag)
+    private val messageView: TextView = itemView.findViewById(R.id.message)
     val levelView: TextView = itemView.findViewById(R.id.level)
-    val messageView: TextView = itemView.findViewById(R.id.message)
 
     private var isExpanded = false
+    private var logInfo: LogInfo? = null
 
     init {
         updateView()
     }
 
-    fun toggleExpandedState() {
-        isExpanded = !isExpanded
-        updateView()
-    }
-
     private fun updateView() {
-        pidView.visibility = if (isExpanded) View.VISIBLE else View.GONE
-        timestampView.visibility = if (isExpanded) View.VISIBLE else View.GONE
+        pidView.visibility = if (isExpanded && (logInfo?.hasOnlyMessage() != true)) View.VISIBLE else View.GONE
+        timestampView.visibility = if (isExpanded && (logInfo?.hasOnlyMessage() != true)) View.VISIBLE else View.GONE
         tagView.isSingleLine = !isExpanded
         messageView.isSingleLine = !isExpanded
+    }
+
+    fun setLogInfo(logInfo: LogInfo) {
+        if (logInfo.hasOnlyMessage()) {
+            pidView.visibility = View.GONE
+            timestampView.visibility = View.GONE
+            tagView.visibility = View.GONE
+            levelView.visibility = View.GONE
+        } else {
+            pidView.text = logInfo.pid.toString()
+            timestampView.text = logInfo.timestamp
+            tagView.text = logInfo.tag
+            tagView.visibility = View.VISIBLE
+            levelView.text = logInfo.level.toString()
+            levelView.visibility = View.VISIBLE
+            itemView.setOnClickListener {
+                isExpanded = !isExpanded
+                updateView()
+            }
+        }
+        messageView.text = logInfo.message
+        updateView()
     }
 }

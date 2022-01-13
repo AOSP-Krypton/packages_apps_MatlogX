@@ -17,20 +17,26 @@
 package com.krypton.matlogx.ui
 
 import android.Manifest
+import android.app.SearchManager
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.view.View
-import android.widget.ImageButton
+import android.provider.SearchRecentSuggestions
+import android.view.*
 import android.widget.ProgressBar
+import android.widget.SearchView
 
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 import com.krypton.matlogx.R
+import com.krypton.matlogx.provider.SuggestionProvider
 import com.krypton.matlogx.viewmodel.LogcatViewModel
 
 import dagger.hilt.android.AndroidEntryPoint
@@ -43,16 +49,17 @@ class LogcatActivity : AppCompatActivity() {
     private lateinit var logcatListAdapter: LogcatListAdapter
     private lateinit var logcatLayoutManager: LinearLayoutManager
     private lateinit var loadingProgressBar: ProgressBar
-    private lateinit var pauseButton: ImageButton
+    private lateinit var searchView: SearchView
+    private lateinit var toolbar: Toolbar
+
+    private var scrolledToBottomInitial = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_logcat)
-        setSupportActionBar(findViewById(R.id.toolbar))
+        toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
         loadingProgressBar = findViewById(R.id.loading_progress_bar)
-        pauseButton = findViewById<ImageButton>(R.id.pause_button).apply {
-            setOnClickListener { logcatViewModel.togglePauseButtonState() }
-        }
     }
 
     override fun onStart() {
@@ -65,17 +72,92 @@ class LogcatActivity : AppCompatActivity() {
             logcatViewModel.getLogcatLiveData().observe(this) {
                 loadingProgressBar.visibility = if (it.isEmpty()) View.VISIBLE else View.GONE
                 logcatListAdapter.submitList(it)
-                if (logcatViewModel.autoScroll) logcatListView.scrollToPosition(it.size - 1)
-            }
-            logcatViewModel.getPauseButtonState().observe(this) {
-                if (it) {
-                    pauseButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
-                } else {
-                    pauseButton.setImageResource(R.drawable.ic_baseline_pause_24)
+                if (logcatListAdapter.itemCount > 0 && (!scrolledToBottomInitial || logcatViewModel.autoScroll)) {
+                    scrolledToBottomInitial = true
                     logcatListView.scrollToPosition(logcatListAdapter.itemCount - 1)
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleSearchIntent(intent)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.logcat_toolbar_menu, menu)
+        menu.findItem(R.id.pause_button).setIcon(
+            if (logcatViewModel.logcatUpdatePaused)
+                R.drawable.ic_baseline_play_arrow_24
+            else
+                R.drawable.ic_baseline_pause_24
+        )
+        val searchButton = menu.findItem(R.id.search_button).also {
+            it.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+                override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
+                    toolbar.title = null
+                    return true
+                }
+
+                override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
+                    toolbar.setTitle(R.string.app_name)
+                    return true
+                }
+            })
+        }
+        val searchManager = getSystemService(SearchManager::class.java)
+        searchView = (searchButton.actionView as SearchView).also {
+            it.setSearchableInfo(
+                searchManager.getSearchableInfo(
+                    componentName
+                )
+            )
+            it.setOnCloseListener {
+                logcatViewModel.handleSearch(null)
+                false
+            }
+        }
+        handleSearchIntent(intent)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        when (item.itemId) {
+            R.id.pause_button -> {
+                logcatViewModel.logcatUpdatePaused = !logcatViewModel.logcatUpdatePaused
+                if (logcatViewModel.logcatUpdatePaused) {
+                    item.icon = ResourcesCompat.getDrawable(
+                        resources,
+                        R.drawable.ic_baseline_play_arrow_24,
+                        null
+                    )
+                } else {
+                    item.icon = ResourcesCompat.getDrawable(
+                        resources,
+                        R.drawable.ic_baseline_pause_24,
+                        null
+                    )
+                    logcatListView.scrollToPosition(logcatListAdapter.itemCount - 1)
+                }
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+
+    private fun handleSearchIntent(intent: Intent?) {
+        if (intent?.action != Intent.ACTION_SEARCH) return
+        val query: String? = intent.getStringExtra(SearchManager.QUERY)
+        searchView.setQuery(query, false)
+        if (query?.isNotBlank() == true) {
+            SearchRecentSuggestions(
+                this,
+                SuggestionProvider.AUTHORITY,
+                SuggestionProvider.MODE
+            ).saveRecentQuery(query, null)
+        }
+        logcatViewModel.handleSearch(query)
     }
 
     private fun showPermissionHelperDialog() {

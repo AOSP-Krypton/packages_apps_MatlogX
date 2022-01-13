@@ -16,8 +16,6 @@
 
 package com.krypton.matlogx.viewmodel
 
-import android.os.CancellationSignal
-
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -28,11 +26,13 @@ import com.krypton.matlogx.repo.LogcatRepository
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
+import java.util.LinkedList
 
 import javax.inject.Inject
+
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collectIndexed
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class LogcatViewModel @Inject constructor(
@@ -40,27 +40,26 @@ class LogcatViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val logcatLiveData = MutableLiveData<List<LogInfo>>()
-    private val logList = mutableListOf<LogInfo>()
-    private var cancellationSignal = CancellationSignal()
-    private var job: Job
+    private val logList = LinkedList<LogInfo>()
+    private var job: Job? = null
 
     // Whether livedata should be updated when new log info is collected from repository
-    private var logcatUpdatePaused = false
-    private val pauseButtonLiveData = MutableLiveData(logcatUpdatePaused)
+    var logcatUpdatePaused = false
+        set(value) {
+            field = value
+            if (value) cancelJob()
+            else startJob()
+        }
 
     // Whether we should scroll to the bottom automatically
-    // when new log info is added to the list
+    // when new log info is added to the list.
     var autoScroll = true
+
+    private var cachedQuery: String? = null
 
     init {
         // Start reading on init
-        job = viewModelScope.launch {
-            val size = logcatRepository.getCurrentLogcatSize()
-            logcatRepository.getLogcatStream(cancellationSignal).collect {
-                logList.add(it)
-                if (!logcatUpdatePaused && logList.size > size) logcatLiveData.value = logList.toList()
-            }
-        }
+        startJob()
     }
 
     /**
@@ -70,25 +69,46 @@ class LogcatViewModel @Inject constructor(
      */
     fun getLogcatLiveData(): LiveData<List<LogInfo>> = logcatLiveData
 
-    /**
-     * Get the state of pause button as a [LiveData].
-     * State is false if logcat stream is paused and vice versa
-     *
-     * @return [LiveData] of state variable.
-     */
-    fun getPauseButtonState(): LiveData<Boolean> = pauseButtonLiveData
-
-    /**
-     * Toggle the state of the pause button.
-     */
-    fun togglePauseButtonState() {
-        logcatUpdatePaused = !logcatUpdatePaused
-        pauseButtonLiveData.value = logcatUpdatePaused
+    fun handleSearch(query: String?) {
+        if (cachedQuery == query) return
+        cachedQuery = query
+        job?.cancel()
+        startJob()
     }
 
     override fun onCleared() {
-        cancellationSignal.cancel()
-        job.cancel()
+        cancelJob()
         super.onCleared()
+    }
+
+    private fun startJob() {
+        job = viewModelScope.launch {
+
+            // Start fresh on a new job
+            logList.clear()
+            logcatLiveData.value = emptyList()
+
+            val limit = logcatRepository.getLogcatSizeLimit()
+            logcatRepository.getLogcatStream(cachedQuery).collectIndexed { index, logInfo ->
+                if (logList.size == limit) {
+                    logList.removeFirst()
+                }
+                logList.add(logInfo)
+                // This restriction is here so that the recycler view won't struggle
+                // when elements are pumped in one by one rapidly for the first time.
+                // Displaying a large set of logs first and then pushing the rest one by one
+                // is better.
+                if (index >= limit || (cachedQuery?.isNotBlank() == true)) {
+                    logcatLiveData.value = logList.toList()
+                }
+            }
+        }
+    }
+
+    private fun cancelJob() {
+        if (job != null) {
+            job?.cancel()
+            job = null
+        }
     }
 }

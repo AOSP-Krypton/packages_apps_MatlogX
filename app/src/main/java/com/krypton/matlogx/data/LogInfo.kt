@@ -22,30 +22,22 @@ package com.krypton.matlogx.data
  * @property pid process id of the program that logged this entry.
  * @property timestamp time (format MM-dd HH:MM:ss.SSS) at which this entry was logged.
  * @property tag the log tag of this entry.
- * @property level the log level of this entry (one of [Level]).
+ * @property level the log level of this entry.
  * @property message the message that was logged.
  */
 data class LogInfo(
-    val pid: Int = -1,
+    val pid: Short = -1,
     val timestamp: String = "",
     val tag: String = "",
-    val level: Level = Level.UNKNOWN,
+    val level: Char = ' ',
     val message: String = "",
 ) {
-    enum class Level {
-        // For logs with only messages
-        UNKNOWN {
-            override fun toChar() = ""
-        },
-        VERBOSE,
-        DEBUG,
-        INFO,
-        WARN,
-        ERROR,
-        FATAL;
-
-        open fun toChar() = name[0].toString()
-    }
-
-    fun hasOnlyMessage() = level == Level.UNKNOWN
+    /**
+     * Check whether this object represents only a message.
+     * This is the case when a [LogInfo] object is used to
+     * contain event separator logs.
+     *
+     * @return true if this represents only a message.
+     */
+    fun hasOnlyMessage() = level.isWhitespace()
 }

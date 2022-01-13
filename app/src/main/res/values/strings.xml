@@ -23,4 +23,8 @@
         To grant the permission, open adb and enter the following command (without quotes):\n
         "adb shell pm grant com.krypton.logcat android.permission.READ_LOGS".
     </string>
+    <string name="pause">Pause</string>
+    <string name="search">Search</string>
+    <string name="search_hint">Search logs</string>
+    <string name="string_not_found_in_logs">String not found in logs</string>
 </resources>

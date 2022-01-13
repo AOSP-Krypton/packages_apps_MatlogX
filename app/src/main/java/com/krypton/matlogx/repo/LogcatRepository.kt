@@ -16,8 +16,6 @@
 
 package com.krypton.matlogx.repo
 
-import android.os.CancellationSignal
-
 import com.krypton.matlogx.data.LogInfo
 import com.krypton.matlogx.reader.LogcatReader
 import com.krypton.matlogx.util.SettingsHelper
@@ -35,22 +33,23 @@ class LogcatRepository @Inject constructor(
     /**
      * Get an asynchronous stream of [LogInfo].
      *
-     * @param cancellationSignal to terminate the flow.
+     * @param query string to filter the logs with
      * @return a flow of [LogInfo].
      */
-    fun getLogcatStream(cancellationSignal: CancellationSignal): Flow<LogInfo> {
+    fun getLogcatStream(query: String?): Flow<LogInfo> {
         val logcatReader = LogcatReader()
         return logcatReader.read(
-            cancellationSignal,
-            args = settingsHelper.getArgsFromUserSettings(),
+            args = settingsHelper.getLogcatArgs(),
             tags = null,
+            query,
         )
     }
 
     /**
-     * Query the total number of lines in the logcat buffer
+     * Get the user selected limit for number of log lines to keep
+     * at a time to prevent OOM errors.
      *
-     * @return the total number of lines in all of the logcat buffer
+     * @return number of lines to keep
      */
-    suspend fun getCurrentLogcatSize(): Int = LogcatReader().getSize()
+    fun getLogcatSizeLimit(): Int = settingsHelper.getLogSizeLimit()
 }

@@ -14,11 +14,20 @@
  * limitations under the License.
  */
 
-package com.krypton.matlogx
+package com.krypton.matlogx.provider
 
-import android.app.Application
+import android.content.SearchRecentSuggestionsProvider
 
-import dagger.hilt.android.HiltAndroidApp
+/**
+ * Content provider for search query suggestions
+ */
+class SuggestionProvider : SearchRecentSuggestionsProvider() {
+    init {
+        setupSuggestions(AUTHORITY, MODE)
+    }
 
-@HiltAndroidApp
-class LogcatApp : Application()
+    companion object {
+        const val AUTHORITY = "com.krypton.matlogx.provider.SuggestionProvider"
+        const val MODE: Int = DATABASE_MODE_QUERIES
+    }
+}

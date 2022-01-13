@@ -16,15 +16,14 @@
 
 package com.krypton.matlogx.reader
 
-import android.os.CancellationSignal
-
 import com.krypton.matlogx.data.LogInfo
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.isActive
 
 /**
  * A reader class to reads lines from system logcat.
@@ -36,101 +35,80 @@ class LogcatReader {
     /**
      * Read logcat with the given command line args.
      *
-     * @param terminateSignal signal to call cancel when reading should be terminated safely.
+     * @param args command line arguments for logcat.
+     * @param tags a list of string tags to filter the logs.
+     * @param query string to filter the logs
      * @return a [Flow] of [LogInfo].
      */
     fun read(
-        terminateSignal: CancellationSignal,
         args: Map<String, String?>? = null,
         tags: List<String>? = null,
+        query: String?,
     ): Flow<LogInfo> {
-        val flattenedArgs = flattenArgsToString(args)
-        val flattenedTags = flattenTagsToString(tags)
-        val process: Process =
-            Runtime.getRuntime().exec("$LOGCAT_BIN$flattenedArgs$flattenedTags")
-        val bufferedReader = process.inputStream.bufferedReader()
+        val process = ProcessBuilder(
+            LOGCAT_BIN,
+            "--format=time,usec",
+            flattenArgsToString(args),
+            flattenTagsToString(tags)
+        ).start()
+        process.outputStream.close()
         return flow {
-            bufferedReader.use {
-                while (!terminateSignal.isCanceled) {
-                    it.readLine().takeIf { line ->
-                        line != null && line.isNotBlank()
+            process.inputStream.bufferedReader().use {
+                while (currentCoroutineContext().isActive) {
+                    it.readLine()?.takeIf { line ->
+                        line.isNotBlank() && line.contains(query ?: "", true)
                     }?.let { line ->
-                        getLogInfo(line)?.let { info -> emit(info) }
+                        emit(getLogInfo(line))
                     }
                 }
             }
         }.flowOn(Dispatchers.IO)
     }
 
-    /**
-     * Get the number of logs from all buffers.
-     *
-     * @return an [Int] type value of the total number of logs.
-     */
-    suspend fun getSize(): Int {
-        val process: Process =
-            Runtime.getRuntime().exec("$LOGCAT_BIN ${Args.OPTION_STATISTICS}")
-        val bufferedReader = process.inputStream.bufferedReader()
-        return withContext(Dispatchers.IO) {
-            val statLine = bufferedReader.lines()
-                .filter {
-                    it != null && it.isNotBlank()
-                }.filter {
-                    // We want this line                                       This here is the total number of logs
-                    // Total 1689561/12962 891650/6756 0/0 181653/1846 2762864/21564
-                    it.startsWith("Total")
-                }.findFirst().get()
-            if (statLine.isNotBlank()) {
-                statLine.substringAfterLast("/").toInt()
-            } else {
-                0
-            }
-        }
-    }
+    companion object {
+        private const val LOGCAT_BIN = "logcat"
 
-    /**
-     * Command line options and supported values for logcat binary.
-     * There are many other options besides those given here, these
-     * are the only one's being used right now.
-     * Use of these options can be seen with logcat --help command.
-     */
-    object Args {
+        /**
+         * Command line options and supported values for logcat binary.
+         * There are many other options besides those given here, these
+         * are the only one's being used right now.
+         * Use of these options can be seen with logcat --help command.
+         */
         const val OPTION_BUFFER = "-b"
         const val BUFFER_ALL = "all"
 
-        const val OPTION_STATISTICS = "-S"
-    }
-
-    companion object {
-        private const val LOGCAT_BIN = "logcat"
+        //--Make it public if needed--//
+        private const val OPTION_DEFAULT_SILENT = "-s"
 
         private fun flattenArgsToString(args: Map<String, String?>?): String =
             args?.map { " ${it.key} ${it.value ?: ""}" }?.fold("", { r, t -> r + t }) ?: ""
 
         private fun flattenTagsToString(tags: List<String>?): String =
-            tags?.fold(" '*:S", { r, t -> "$r $t" }) ?: ""
+            tags?.fold(" $OPTION_DEFAULT_SILENT", { r, t -> "$r $t" }) ?: ""
 
-        private fun getLogInfo(logLine: String): LogInfo? {
+        private val timestampRegex =
+            Regex("^[0-9]{2}-[0-9]{2}\\s[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}")
+        private val pidRegex = Regex("\\(\\s*[0-9]+\\)")
+
+        private fun getLogInfo(logLine: String): LogInfo {
             // Filter event separators
             if (logLine.startsWith("-")) {
                 return LogInfo(message = logLine)
             }
-            // Example elements: 11-13,22:52:06.633,pid,uid,level,TAG,some_message
-            val list = logLine.split(" ").filter { it.isNotBlank() }
-            // We shouldn't bother about logs separating events
-            if (list.size < 5) {
-                return null
-            }
+            // Log format:
+            // DD-MM HH:MM:SS.ssssss D/TAG( PID): message
+            val metadata = logLine.substringBefore("/")
+            val pid = pidRegex.find(logLine)?.value?.substringAfter("(")?.substringBefore(")")
+                ?.trimStart()?.toShort()
+                ?: -1
             return LogInfo(
-                pid = list[2].toInt(),
-                timestamp = "${list[0]} ${list[1]}",
-                tag = list[5],
-                level = getLevelFromString(list[4]),
-                message = logLine.substringAfter(": "),
+                pid = pid,
+                timestamp = timestampRegex.find(metadata)?.value ?: "",
+                // Assuming that no one insane used ( in their tag
+                tag = logLine.substringAfter("/").substringBefore("("),
+                level = metadata.last(),
+                message = logLine.substringAfter("):").trim(),
             )
         }
-
-        private fun getLevelFromString(level: String): LogInfo.Level =
-            LogInfo.Level.values().first { it.toChar() == level }
     }
 }

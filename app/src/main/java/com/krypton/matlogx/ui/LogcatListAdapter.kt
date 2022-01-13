@@ -18,83 +18,60 @@ package com.krypton.matlogx.ui
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 
 import com.krypton.matlogx.R
 import com.krypton.matlogx.data.LogInfo
 
-class LogcatListAdapter(context: Context) : RecyclerView.Adapter<LogcatListViewHolder>() {
+class LogcatListAdapter(context: Context) : ListAdapter<LogInfo, LogcatListViewHolder>(diffCallback) {
 
-    private var list: List<LogInfo> = emptyList()
+    private val layoutInflater = LayoutInflater.from(context)
 
     // Background & Foreground color maps for different log levels
     private val bgColorMap = mapOf(
-        LogInfo.Level.VERBOSE to context.getColor(R.color.background_verbose),
-        LogInfo.Level.DEBUG to context.getColor(R.color.background_debug),
-        LogInfo.Level.INFO to context.getColor(R.color.background_info),
-        LogInfo.Level.WARN to context.getColor(R.color.background_warn),
-        LogInfo.Level.ERROR to context.getColor(R.color.background_error),
-        LogInfo.Level.FATAL to context.getColor(R.color.background_fatal),
+        'V' to context.getColor(R.color.background_verbose),
+        'D' to context.getColor(R.color.background_debug),
+        'I' to context.getColor(R.color.background_info),
+        'W' to context.getColor(R.color.background_warn),
+        'E' to context.getColor(R.color.background_error),
+        'F' to context.getColor(R.color.background_fatal),
     )
 
     private val fgColorMap = mapOf(
-        LogInfo.Level.VERBOSE to context.getColor(R.color.foreground_verbose),
-        LogInfo.Level.DEBUG to context.getColor(R.color.foreground_debug),
-        LogInfo.Level.INFO to context.getColor(R.color.foreground_info),
-        LogInfo.Level.WARN to context.getColor(R.color.foreground_warn),
-        LogInfo.Level.ERROR to context.getColor(R.color.foreground_error),
-        LogInfo.Level.FATAL to context.getColor(R.color.foreground_fatal),
+        'V' to context.getColor(R.color.foreground_verbose),
+        'D' to context.getColor(R.color.foreground_debug),
+        'I' to context.getColor(R.color.foreground_info),
+        'W' to context.getColor(R.color.foreground_warn),
+        'E' to context.getColor(R.color.foreground_error),
+        'F' to context.getColor(R.color.foreground_fatal),
     )
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LogcatListViewHolder {
-        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.logcat_list_item, parent, false)
-        return LogcatListViewHolder(itemView)
+        return LogcatListViewHolder(layoutInflater.inflate(R.layout.logcat_list_item,
+            parent, false))
     }
 
     override fun onBindViewHolder(holder: LogcatListViewHolder, position: Int) {
         val logInfo = getItem(position)
-        with(holder) {
-            if (logInfo.level == LogInfo.Level.UNKNOWN) {
-                pidView.visibility = View.GONE
-                timestampView.visibility = View.GONE
-                tagView.visibility = View.GONE
-                levelView.visibility = View.GONE
-            } else {
-                pidView.text = logInfo.pid.toString()
-                timestampView.text = logInfo.timestamp
-                tagView.text = logInfo.tag
-                levelView.text = logInfo.level.toChar()
-                levelView.setBackgroundColor(getLogLevelBgColor(logInfo.level))
-                levelView.setTextColor(getLogLevelFgColor(logInfo.level))
-                itemView.setOnClickListener { holder.toggleExpandedState() }
+        holder.apply {
+            setLogInfo(logInfo)
+            if (!logInfo.hasOnlyMessage()) {
+                levelView.setBackgroundColor(bgColorMap[logInfo.level]!!)
+                levelView.setTextColor(fgColorMap[logInfo.level]!!)
             }
-            messageView.text = logInfo.message
         }
     }
 
-    override fun getItemCount() = list.size
+    companion object {
+        private val diffCallback = object: DiffUtil.ItemCallback<LogInfo>() {
+            override fun areItemsTheSame(oldItem: LogInfo, newItem: LogInfo) =
+                oldItem.timestamp == newItem.timestamp
 
-    /**
-     * Submit a [List] of [LogInfo] to be displayed in the list view.
-     * TODO Update the list diffing algorithm when search support is added.
-     *
-     * @param list the list of [LogInfo].
-     */
-    fun submitList(list: List<LogInfo>) {
-        val currentSize = this.list.size
-        val sizeDiff = list.size - currentSize
-        if (sizeDiff > 0) {
-            this.list = list
-            notifyItemRangeInserted(currentSize, sizeDiff)
+            override fun areContentsTheSame(oldItem: LogInfo, newItem: LogInfo) =
+                oldItem == newItem
         }
     }
-
-    private fun getItem(position: Int) = list[position]
-
-    private fun getLogLevelBgColor(level: LogInfo.Level): Int = bgColorMap[level]!!
-
-    private fun getLogLevelFgColor(level: LogInfo.Level): Int = fgColorMap[level]!!
 }

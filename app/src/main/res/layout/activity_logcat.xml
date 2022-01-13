@@ -27,22 +27,12 @@
         android:layout_height="?android:attr/actionBarSize"
         android:background="?android:attr/colorPrimary"
         android:elevation="4dp"
+        android:theme="@style/Theme.MatLogX.Toolbar"
         app:contentInsetStart="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:titleTextColor="?attr/colorOnPrimary">
-
-        <ImageButton
-            android:id="@+id/pause_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:padding="@dimen/toolbar_button_padding"
-            android:background="@null"
-            android:contentDescription="@string/logcat_play_or_pause"
-            app:tint="?attr/colorOnPrimary" />
-    </androidx.appcompat.widget.Toolbar>
+        app:titleTextColor="?attr/colorOnPrimary" />
 
     <ProgressBar
         android:id="@+id/loading_progress_bar"
@@ -53,7 +43,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.l4digital.fastscroll.FastScrollRecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/log_list"
         android:layout_width="0dp"
         android:layout_height="0dp"
