@@ -48,14 +48,15 @@ class LogcatReader {
         query: String?,
         logLevel: String,
     ): Flow<LogInfo> {
+        val argsList = mutableListOf(
+            LOGCAT_BIN,
+            "*:$logLevel",
+            "--format=time,usec"
+        )
+        appendArgs(args, argsList)
+        appendTags(tags, argsList)
         return flow {
-            getInputStream(
-                LOGCAT_BIN,
-                "*:$logLevel",
-                "--format=time,usec",
-                flattenArgsToString(args),
-                flattenTagsToString(tags),
-            ).bufferedReader().use {
+            getInputStream(argsList).bufferedReader().use {
                 while (currentCoroutineContext().isActive) {
                     it.readLine()?.takeIf { line ->
                         line.isNotBlank() && (query == null || line.contains(query, true))
@@ -81,13 +82,14 @@ class LogcatReader {
         query: String?,
         logLevel: String,
     ): Int {
-        return getInputStream(
+        val argsList = mutableListOf(
             LOGCAT_BIN,
             "*:$logLevel",
-            flattenArgsToString(args),
-            flattenTagsToString(tags),
-            OPTION_DUMP
-        ).bufferedReader().use { br ->
+        )
+        appendArgs(args, argsList)
+        appendTags(tags, argsList)
+        argsList.add(OPTION_DUMP)
+        return getInputStream(argsList).bufferedReader().use { br ->
             if (query?.isNotEmpty() == true) {
                 br.lines().filter { it != null && it.contains(query) }.count()
             } else {
@@ -96,10 +98,29 @@ class LogcatReader {
         }.toInt()
     }
 
-    private fun getInputStream(vararg commands: String): InputStream {
-        val process = ProcessBuilder(*commands).start()
+    private fun getInputStream(commands: List<String>): InputStream {
+        val process = ProcessBuilder(commands).start()
         process.outputStream.close()
         return process.inputStream
+    }
+
+    private fun appendArgs(
+        args: Map<String, String?>?,
+        list: MutableList<String>
+    ): MutableList<String> {
+        args?.forEach { (k, v) ->
+            list.add(k)
+            list.add(v ?: "")
+        }
+        return list
+    }
+
+    private fun appendTags(tags: List<String>?, list: MutableList<String>): MutableList<String> {
+        if (tags != null) {
+            list.add(OPTION_DEFAULT_SILENT)
+            tags.forEach { list.add(it) }
+        }
+        return list
     }
 
     companion object {
@@ -117,12 +138,6 @@ class LogcatReader {
         private const val OPTION_DEFAULT_SILENT = "-s"
 
         private const val OPTION_DUMP = "-d"
-
-        private fun flattenArgsToString(args: Map<String, String?>?): String =
-            args?.map { " ${it.key} ${it.value ?: ""}" }?.fold("", { r, t -> r + t }) ?: ""
-
-        private fun flattenTagsToString(tags: List<String>?): String =
-            tags?.fold(" $OPTION_DEFAULT_SILENT", { r, t -> "$r $t" }) ?: ""
 
         private val timestampRegex =
             Regex("^[0-9]{2}-[0-9]{2}\\s[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}")
