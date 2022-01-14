@@ -21,8 +21,6 @@ import android.content.SharedPreferences
 
 import androidx.core.content.edit
 
-import com.krypton.matlogx.reader.LogcatReader
-
 import dagger.hilt.android.qualifiers.ApplicationContext
 
 import javax.inject.Inject
@@ -33,7 +31,7 @@ import javax.inject.Inject
  */
 class SettingsHelper @Inject constructor(
     @ApplicationContext context: Context
-) {
+) : SharedPreferences.OnSharedPreferenceChangeListener {
 
     private val sharedPreferences by lazy {
         context.getSharedPreferences(
@@ -41,6 +39,9 @@ class SettingsHelper @Inject constructor(
             Context.MODE_PRIVATE
         )
     }
+
+    private var registered = false
+    private val listeners = mutableListOf<() -> Unit>()
 
     fun getLogcatBuffers(): Set<String> =
         sharedPreferences.getStringSet(PREF_KEY_LOGCAT_BUFFER, PREF_KEY_LOGCAT_BUFFER_DEFAULT)!!
@@ -86,6 +87,26 @@ class SettingsHelper @Inject constructor(
         sharedPreferences.edit(commit = true) {
             putString(PREF_KEY_LOG_LEVEL, value)
         }
+    }
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        if (key == PREF_KEY_LOGCAT_BUFFER ||
+            key == PREF_KEY_LOG_SIZE_LIMIT ||
+            key == PREF_KEY_LOG_LEVEL
+        ) {
+            listeners.forEach { it() }
+        }
+    }
+
+    /**
+     * Registers a listener to get notified when [PREF_KEY_LOGCAT_BUFFER],
+     * [PREF_KEY_LOG_SIZE_LIMIT], [PREF_KEY_LOG_LEVEL] change.
+     *
+     * @param listener the callback that will be invoked when settings change.
+     */
+    fun registerConfigurationChangeListener(listener: () -> Unit) {
+        if (!registered) sharedPreferences.registerOnSharedPreferenceChangeListener(this)
+        listeners.add(listener)
     }
 
     companion object {

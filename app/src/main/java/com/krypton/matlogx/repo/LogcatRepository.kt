@@ -91,4 +91,14 @@ class LogcatRepository @Inject constructor(
     fun setLogLevel(value: String) {
         settingsHelper.setLogLevel(value)
     }
+
+    /**
+     * Registers a listener to get notified when settings change
+     * that require clients of [getLogcatStream] to re-start the coroutines.
+     *
+     * @param listener the callback that will be invoked when settings change.
+     */
+    fun registerConfigurationChangeListener(listener: () -> Unit) {
+        settingsHelper.registerConfigurationChangeListener(listener)
+    }
 }

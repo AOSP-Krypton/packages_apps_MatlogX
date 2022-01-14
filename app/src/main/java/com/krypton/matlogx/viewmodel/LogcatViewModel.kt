@@ -65,15 +65,18 @@ class LogcatViewModel @Inject constructor(
 
     var logLevel: Int = logLevelMap[logcatRepository.getLogLevel()]!!
         set(value) {
-            field = value
-            logcatRepository.setLogLevel(logLevelMap.keyAt(logLevelMap.indexOfValue(value)))
-            job?.cancel()
-            startJob()
+            if (field != value) {
+                field = value
+                logcatRepository.setLogLevel(logLevelMap.keyAt(logLevelMap.indexOfValue(value)))
+            }
         }
 
     init {
         // Start reading on init
         startJob()
+        logcatRepository.registerConfigurationChangeListener {
+            restartLogcat()
+        }
     }
 
     /**
@@ -86,7 +89,12 @@ class LogcatViewModel @Inject constructor(
     fun handleSearch(query: String?) {
         if (cachedQuery == query) return
         cachedQuery = query
+        restartLogcat()
+    }
+
+    private fun restartLogcat() {
         job?.cancel()
+        logcatLiveData.value = emptyList()
         startJob()
     }
 
