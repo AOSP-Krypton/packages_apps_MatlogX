@@ -46,10 +46,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
         findPreference<MultiSelectListPreference>(BUFFER_KEY)?.also {
             val buffers = settingsHelper.getLogcatBuffers()
             it.summary = buffers.joinToString(", ")
-            it.setDefaultValue(buffers)
+            it.values = buffers
             it.setOnPreferenceChangeListener { _, newValue ->
                 @Suppress("UNCHECKED_CAST")
-                settingsHelper.setLogcatBuffers(newValue as Set<String>)
+                val newBuffers = newValue as Set<String>
+                settingsHelper.setLogcatBuffers(newBuffers)
+                it.summary = newBuffers.joinToString(", ")
                 true
             }
         }
