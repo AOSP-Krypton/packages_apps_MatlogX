@@ -22,4 +22,13 @@
         <item>events</item>
         <item>crash</item>
     </array>
+
+    <array name="log_level">
+        <item>Verbose (Default)</item>
+        <item>Debug</item>
+        <item>Info</item>
+        <item>Warn</item>
+        <item>Error</item>
+        <item>Fatal</item>
+    </array>
 </resources>

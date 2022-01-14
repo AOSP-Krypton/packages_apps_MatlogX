@@ -69,6 +69,25 @@ class SettingsHelper @Inject constructor(
         }
     }
 
+    /**
+     * Get the log level saved in [SharedPreferences].
+     *
+     * @return the saved log level or default [LOG_LEVEL_DEFAULT].
+     */
+    fun getLogLevel(): String =
+        sharedPreferences.getString(PREF_KEY_LOG_LEVEL, LOG_LEVEL_DEFAULT)!!
+
+    /**
+     * Saves the log level to [SharedPreferences]
+     *
+     * @param value the log level to save
+     */
+    fun setLogLevel(value: String) {
+        sharedPreferences.edit(commit = true) {
+            putString(PREF_KEY_LOG_LEVEL, value)
+        }
+    }
+
     companion object {
         private const val PREF_FILE_NAME = "matlogx_shared_preferences"
 
@@ -78,5 +97,8 @@ class SettingsHelper @Inject constructor(
 
         private const val PREF_KEY_LOG_SIZE_LIMIT = "key_log_size_limit"
         const val LOG_SIZE_DEFAULT = 10000
+
+        private const val PREF_KEY_LOG_LEVEL = "key_log_level"
+        private const val LOG_LEVEL_DEFAULT = "V"
     }
 }

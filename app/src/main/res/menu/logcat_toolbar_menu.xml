@@ -26,6 +26,10 @@
         android:title="@string/pause"
         app:showAsAction="ifRoom" />
 
+    <item android:id="@+id/log_level"
+        android:title="@string/log_level"
+        app:showAsAction="never" />
+
     <item android:id="@+id/settings"
         android:title="@string/settings"
         app:showAsAction="never" />

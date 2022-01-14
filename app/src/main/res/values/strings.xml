@@ -36,4 +36,5 @@
     <string name="log_display_limit">Log display limit</string>
     <string name="log_display_limit_summary_placeholder">Show only the last <xliff:g example="10000" id="limit">%1$d</xliff:g> logs to avoid going out of memory.</string>
     <string name="log_buffers">Log buffers</string>
+    <string name="log_level">Log level</string>
 </resources>

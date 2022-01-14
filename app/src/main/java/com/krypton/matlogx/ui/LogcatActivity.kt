@@ -101,81 +101,6 @@ class LogcatActivity : AppCompatActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        setIntent(intent)
-        handleSearchIntent(intent)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.logcat_toolbar_menu, menu)
-        menu.findItem(R.id.pause_button).setIcon(
-            if (logcatViewModel.logcatUpdatePaused)
-                R.drawable.ic_baseline_play_arrow_24
-            else
-                R.drawable.ic_baseline_pause_24
-        )
-        val searchManager = getSystemService(SearchManager::class.java)
-        searchView = (menu.findItem(R.id.search_button).actionView as SearchView).also {
-            it.setSearchableInfo(
-                searchManager.getSearchableInfo(
-                    componentName
-                )
-            )
-            it.setOnCloseListener {
-                toolbar.setTitle(R.string.app_name)
-                logcatViewModel.handleSearch(null)
-                false
-            }
-            it.setOnSearchClickListener {
-                toolbar.title = null
-            }
-        }
-        handleSearchIntent(intent)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when (item.itemId) {
-            R.id.pause_button -> {
-                logcatViewModel.logcatUpdatePaused = !logcatViewModel.logcatUpdatePaused
-                if (logcatViewModel.logcatUpdatePaused) {
-                    item.icon = ResourcesCompat.getDrawable(
-                        resources,
-                        R.drawable.ic_baseline_play_arrow_24,
-                        null
-                    )
-                } else {
-                    item.icon = ResourcesCompat.getDrawable(
-                        resources,
-                        R.drawable.ic_baseline_pause_24,
-                        null
-                    )
-                    logcatListView.scrollToPosition(logcatListAdapter.itemCount - 1)
-                }
-                true
-            }
-            R.id.settings -> {
-                startActivity(Intent(this, SettingsActivity::class.java))
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-
-    private fun handleSearchIntent(intent: Intent?) {
-        if (intent?.action != Intent.ACTION_SEARCH) return
-        val query: String? = intent.getStringExtra(SearchManager.QUERY)
-        searchView.setQuery(query, false)
-        if (query?.isNotBlank() == true) {
-            SearchRecentSuggestions(
-                this,
-                SuggestionProvider.AUTHORITY,
-                SuggestionProvider.MODE
-            ).saveRecentQuery(query, null)
-        }
-        logcatViewModel.handleSearch(query)
-    }
-
     private fun showPermissionHelperDialog() {
         AlertDialog.Builder(this)
             .setTitle(R.string.grant_permissions)
@@ -234,4 +159,97 @@ class LogcatActivity : AppCompatActivity() {
 
     private fun isLastItemVisible() =
         logcatLayoutManager.findLastCompletelyVisibleItemPosition() == logcatListAdapter.itemCount - 1
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleSearchIntent(intent)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.logcat_toolbar_menu, menu)
+        menu.findItem(R.id.pause_button).setIcon(
+            if (logcatViewModel.logcatUpdatePaused)
+                R.drawable.ic_baseline_play_arrow_24
+            else
+                R.drawable.ic_baseline_pause_24
+        )
+        val searchManager = getSystemService(SearchManager::class.java)
+        searchView = (menu.findItem(R.id.search_button).actionView as SearchView).also {
+            it.setSearchableInfo(
+                searchManager.getSearchableInfo(
+                    componentName
+                )
+            )
+            it.setOnCloseListener {
+                toolbar.setTitle(R.string.app_name)
+                logcatViewModel.handleSearch(null)
+                false
+            }
+            it.setOnSearchClickListener {
+                toolbar.title = null
+            }
+        }
+        handleSearchIntent(intent)
+        return true
+    }
+
+    private fun handleSearchIntent(intent: Intent?) {
+        if (intent?.action != Intent.ACTION_SEARCH) return
+        val query: String? = intent.getStringExtra(SearchManager.QUERY)
+        searchView.setQuery(query, false)
+        if (query?.isNotBlank() == true) {
+            SearchRecentSuggestions(
+                this,
+                SuggestionProvider.AUTHORITY,
+                SuggestionProvider.MODE
+            ).saveRecentQuery(query, null)
+        }
+        logcatViewModel.handleSearch(query)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        when (item.itemId) {
+            R.id.pause_button -> {
+                logcatViewModel.logcatUpdatePaused = !logcatViewModel.logcatUpdatePaused
+                if (logcatViewModel.logcatUpdatePaused) {
+                    item.icon = ResourcesCompat.getDrawable(
+                        resources,
+                        R.drawable.ic_baseline_play_arrow_24,
+                        null
+                    )
+                } else {
+                    item.icon = ResourcesCompat.getDrawable(
+                        resources,
+                        R.drawable.ic_baseline_pause_24,
+                        null
+                    )
+                    logcatListView.scrollToPosition(logcatListAdapter.itemCount - 1)
+                }
+                true
+            }
+            R.id.log_level -> {
+                showLogLevelDialog()
+                true
+            }
+            R.id.settings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+
+    private fun showLogLevelDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.log_level)
+            .setCancelable(true)
+            .setSingleChoiceItems(R.array.log_level, logcatViewModel.logLevel) { dialog, which ->
+                logcatViewModel.logLevel = which
+                dialog.dismiss()
+            }
+            .setNegativeButton(android.R.string.cancel) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
 }

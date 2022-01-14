@@ -16,6 +16,7 @@
 
 package com.krypton.matlogx.viewmodel
 
+import android.util.ArrayMap
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -53,6 +54,23 @@ class LogcatViewModel @Inject constructor(
 
     private var cachedQuery: String? = null
 
+    private val logLevelMap = ArrayMap<String, Int>(6).apply {
+        put("V", 0)
+        put("I", 1)
+        put("D", 2)
+        put("W", 3)
+        put("E", 4)
+        put("F", 5)
+    }
+
+    var logLevel: Int = logLevelMap[logcatRepository.getLogLevel()]!!
+        set(value) {
+            field = value
+            logcatRepository.setLogLevel(logLevelMap.keyAt(logLevelMap.indexOfValue(value)))
+            job?.cancel()
+            startJob()
+        }
+
     init {
         // Start reading on init
         startJob()
@@ -85,19 +103,22 @@ class LogcatViewModel @Inject constructor(
             logcatLiveData.value = emptyList()
 
             val limit = logcatRepository.getLogcatSizeLimit()
-            logcatRepository.getLogcatStream(cachedQuery).cancellable().collectIndexed { index, logInfo ->
-                if (logList.size == limit) {
-                    logList.removeFirst()
+            val size = logcatRepository.getLogcatSize(cachedQuery)
+            val actualLimit = minOf(limit, size)
+            logcatRepository.getLogcatStream(cachedQuery).cancellable()
+                .collectIndexed { index, logInfo ->
+                    if (logList.size == actualLimit) {
+                        logList.removeFirst()
+                    }
+                    logList.add(logInfo)
+                    // This restriction is here so that the recycler view won't struggle
+                    // when elements are pumped in one by one rapidly for the first time.
+                    // Displaying a large set of logs first and then pushing the rest one by one
+                    // is better.
+                    if (!logcatUpdatePaused && ((index >= (actualLimit - 1)) || (cachedQuery?.isNotBlank() == true))) {
+                        logcatLiveData.value = logList.toList()
+                    }
                 }
-                logList.add(logInfo)
-                // This restriction is here so that the recycler view won't struggle
-                // when elements are pumped in one by one rapidly for the first time.
-                // Displaying a large set of logs first and then pushing the rest one by one
-                // is better.
-                if (!logcatUpdatePaused && (index >= limit || (cachedQuery?.isNotBlank() == true))) {
-                    logcatLiveData.value = logList.toList()
-                }
-            }
         }
     }
 

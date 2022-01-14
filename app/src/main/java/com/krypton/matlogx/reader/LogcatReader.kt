@@ -18,6 +18,8 @@ package com.krypton.matlogx.reader
 
 import com.krypton.matlogx.data.LogInfo
 
+import java.io.InputStream
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
@@ -28,8 +30,6 @@ import kotlinx.coroutines.isActive
 /**
  * A reader class to reads lines from system logcat.
  */
-// Ignore this, flow context is of IO Dispatcher and yet Android Studio is not able to sense it
-@Suppress("BlockingMethodInNonBlockingContext")
 class LogcatReader {
 
     /**
@@ -38,34 +38,68 @@ class LogcatReader {
      * @param args command line arguments for logcat.
      * @param tags a list of string tags to filter the logs.
      * @param query string to filter the logs.
-     * @param limit maximum number of logs to request.
      * @return a [Flow] of [LogInfo].
      */
+    // Ignore this, flow context is of IO Dispatcher and yet Android Studio is not able to sense it
+    @Suppress("BlockingMethodInNonBlockingContext")
     fun read(
         args: Map<String, String?>? = null,
         tags: List<String>? = null,
         query: String?,
-        limit: Int,
+        logLevel: String,
     ): Flow<LogInfo> {
-        val process = ProcessBuilder(
-            LOGCAT_BIN,
-            "--format=time,usec",
-            "-T", limit.toString(),
-            flattenArgsToString(args),
-            flattenTagsToString(tags)
-        ).start()
-        process.outputStream.close()
         return flow {
-            process.inputStream.bufferedReader().use {
+            getInputStream(
+                LOGCAT_BIN,
+                "*:$logLevel",
+                "--format=time,usec",
+                flattenArgsToString(args),
+                flattenTagsToString(tags),
+            ).bufferedReader().use {
                 while (currentCoroutineContext().isActive) {
                     it.readLine()?.takeIf { line ->
-                        line.isNotBlank() && line.contains(query ?: "", true)
+                        line.isNotBlank() && (query == null || line.contains(query, true))
                     }?.let { line ->
                         emit(getLogInfo(line))
                     }
                 }
             }
         }.flowOn(Dispatchers.IO)
+    }
+
+    /**
+     * Get the current size of logcat stream.
+     *
+     * @param args command line arguments for logcat.
+     * @param tags a list of string tags to filter the logs.
+     * @param query string to filter the logs.
+     * @return the current size of logs.
+     */
+    fun getSize(
+        args: Map<String, String?>? = null,
+        tags: List<String>? = null,
+        query: String?,
+        logLevel: String,
+    ): Int {
+        return getInputStream(
+            LOGCAT_BIN,
+            "*:$logLevel",
+            flattenArgsToString(args),
+            flattenTagsToString(tags),
+            OPTION_DUMP
+        ).bufferedReader().use { br ->
+            if (query?.isNotEmpty() == true) {
+                br.lines().filter { it != null && it.contains(query) }.count()
+            } else {
+                br.lines().count()
+            }
+        }.toInt()
+    }
+
+    private fun getInputStream(vararg commands: String): InputStream {
+        val process = ProcessBuilder(*commands).start()
+        process.outputStream.close()
+        return process.inputStream
     }
 
     companion object {
@@ -81,6 +115,8 @@ class LogcatReader {
 
         //--Make it public if needed--//
         private const val OPTION_DEFAULT_SILENT = "-s"
+
+        private const val OPTION_DUMP = "-d"
 
         private fun flattenArgsToString(args: Map<String, String?>?): String =
             args?.map { " ${it.key} ${it.value ?: ""}" }?.fold("", { r, t -> r + t }) ?: ""
