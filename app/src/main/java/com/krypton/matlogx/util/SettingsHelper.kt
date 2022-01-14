@@ -77,6 +77,6 @@ class SettingsHelper @Inject constructor(
         private val PREF_KEY_LOGCAT_BUFFER_DEFAULT = setOf("main", "system", "crash")
 
         private const val PREF_KEY_LOG_SIZE_LIMIT = "key_log_size_limit"
-        const val LOG_SIZE_DEFAULT = 8000
+        const val LOG_SIZE_DEFAULT = 10000
     }
 }

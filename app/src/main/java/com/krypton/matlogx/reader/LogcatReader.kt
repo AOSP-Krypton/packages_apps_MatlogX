@@ -78,7 +78,6 @@ class LogcatReader {
          * Use of these options can be seen with logcat --help command.
          */
         const val OPTION_BUFFER = "-b"
-        const val BUFFER_ALL = "all"
 
         //--Make it public if needed--//
         private const val OPTION_DEFAULT_SILENT = "-s"

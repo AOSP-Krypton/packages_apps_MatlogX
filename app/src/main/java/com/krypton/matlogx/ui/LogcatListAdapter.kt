@@ -20,15 +20,15 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 
 import com.krypton.matlogx.R
 import com.krypton.matlogx.data.LogInfo
 
-class LogcatListAdapter(context: Context) : ListAdapter<LogInfo, LogcatListViewHolder>(diffCallback) {
+class LogcatListAdapter(context: Context) : RecyclerView.Adapter<LogcatListViewHolder>() {
 
     private val layoutInflater = LayoutInflater.from(context)
+    private var list = emptyList<LogInfo>()
 
     // Background & Foreground color map for different log levels
     private val colorMap = mapOf(
@@ -64,7 +64,7 @@ class LogcatListAdapter(context: Context) : ListAdapter<LogInfo, LogcatListViewH
     }
 
     override fun onBindViewHolder(holder: LogcatListViewHolder, position: Int) {
-        val logInfo = getItem(position)
+        val logInfo = list[position]
         holder.apply {
             setLogInfo(logInfo)
             if (!logInfo.hasOnlyMessage()) {
@@ -75,13 +75,35 @@ class LogcatListAdapter(context: Context) : ListAdapter<LogInfo, LogcatListViewH
         }
     }
 
-    companion object {
-        private val diffCallback = object: DiffUtil.ItemCallback<LogInfo>() {
-            override fun areItemsTheSame(oldItem: LogInfo, newItem: LogInfo) =
-                oldItem.timestamp == newItem.timestamp
+    override fun getItemCount(): Int = list.size
 
-            override fun areContentsTheSame(oldItem: LogInfo, newItem: LogInfo) =
-                oldItem == newItem
+    /**
+     * Since this adapter is only meant to submit empty list /
+     * a new list that is just the old list + new elements /
+     * a new list of same size which is just left shifted, we
+     * can skip diffing list and do things in a memory efficient way.
+     *
+     * @param newList the new list to be submitted
+     */
+    fun submitList(newList: List<LogInfo>) {
+        // Incremental list
+        when {
+            newList.size == list.size -> {
+                list = newList
+                notifyItemRemoved(0)
+                notifyItemInserted(newList.size)
+            }
+            newList.size > list.size -> {
+                val startIndex = list.size
+                val sizeDiff = newList.size - startIndex
+                list = newList
+                notifyItemRangeInserted(startIndex, sizeDiff)
+            }
+            newList.isEmpty() -> {
+                val count = list.size
+                list = newList
+                notifyItemRangeRemoved(0, count)
+            }
         }
     }
 }

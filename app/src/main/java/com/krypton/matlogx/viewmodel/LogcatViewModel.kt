@@ -31,6 +31,7 @@ import java.util.LinkedList
 import javax.inject.Inject
 
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.launch
 
@@ -45,11 +46,6 @@ class LogcatViewModel @Inject constructor(
 
     // Whether livedata should be updated when new log info is collected from repository
     var logcatUpdatePaused = false
-        set(value) {
-            field = value
-            if (value) cancelJob()
-            else startJob()
-        }
 
     // Whether we should scroll to the bottom automatically
     // when new log info is added to the list.
@@ -89,7 +85,7 @@ class LogcatViewModel @Inject constructor(
             logcatLiveData.value = emptyList()
 
             val limit = logcatRepository.getLogcatSizeLimit()
-            logcatRepository.getLogcatStream(cachedQuery).collectIndexed { index, logInfo ->
+            logcatRepository.getLogcatStream(cachedQuery).cancellable().collectIndexed { index, logInfo ->
                 if (logList.size == limit) {
                     logList.removeFirst()
                 }
@@ -98,7 +94,7 @@ class LogcatViewModel @Inject constructor(
                 // when elements are pumped in one by one rapidly for the first time.
                 // Displaying a large set of logs first and then pushing the rest one by one
                 // is better.
-                if (index >= limit || (cachedQuery?.isNotBlank() == true)) {
+                if (!logcatUpdatePaused && (index >= limit || (cachedQuery?.isNotBlank() == true))) {
                     logcatLiveData.value = logList.toList()
                 }
             }

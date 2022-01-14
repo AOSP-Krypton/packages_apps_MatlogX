@@ -57,7 +57,6 @@ class LogcatActivity : AppCompatActivity() {
     private lateinit var topScrollButton: FloatingActionButton
     private lateinit var bottomScrollButton: FloatingActionButton
 
-    private var scrolledToBottomInitial = false
     private var internalScroll = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,8 +93,7 @@ class LogcatActivity : AppCompatActivity() {
             logcatViewModel.getLogcatLiveData().observe(this) {
                 loadingProgressBar.visibility = if (it.isEmpty()) View.VISIBLE else View.GONE
                 logcatListAdapter.submitList(it)
-                if (logcatListAdapter.itemCount > 0 && (!scrolledToBottomInitial || logcatViewModel.autoScroll)) {
-                    scrolledToBottomInitial = true
+                if (logcatListAdapter.itemCount > 0 && logcatViewModel.autoScroll) {
                     internalScroll = true
                     logcatListView.scrollToPosition(logcatListAdapter.itemCount - 1)
                 }
