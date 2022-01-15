@@ -56,10 +56,9 @@ class LogcatReader {
         return flow {
             getInputStream(argsList).bufferedReader().use {
                 while (true) {
-                    it.readLine()?.takeIf { line ->
-                        line.isNotBlank() && (query == null || line.contains(query, true))
-                    }?.let { line ->
-                        emit(getLogInfo(line))
+                    val line = it.readLine()
+                    if (query == null || line.contains(query, true)) {
+                        emit(LogInfo.fromLine(it.readLine()))
                     }
                 }
             }
@@ -88,12 +87,10 @@ class LogcatReader {
         appendTags(tags, argsList)
         argsList.add(OPTION_DUMP)
         return getInputStream(argsList).bufferedReader().use { br ->
-            if (query?.isNotEmpty() == true) {
-                br.lines().filter { it != null && it.contains(query) }.count()
-            } else {
-                br.lines().count()
-            }
-        }.toInt()
+            br.lines().filter {
+                query?.isBlank() != false || it.contains(query, true)
+            }.count().toInt()
+        }
     }
 
     private fun getInputStream(commands: List<String>): InputStream {
@@ -136,30 +133,5 @@ class LogcatReader {
         private const val OPTION_DEFAULT_SILENT = "-s"
 
         private const val OPTION_DUMP = "-d"
-
-        private val timestampRegex =
-            Regex("^[0-9]{2}-[0-9]{2}\\s[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}")
-        private val pidRegex = Regex("\\(\\s*[0-9]+\\)")
-
-        private fun getLogInfo(logLine: String): LogInfo {
-            // Filter event separators
-            if (logLine.startsWith("-")) {
-                return LogInfo(message = logLine)
-            }
-            // Log format:
-            // DD-MM HH:MM:SS.ssssss D/TAG( PID): message
-            val metadata = logLine.substringBefore("/")
-            val pid = pidRegex.find(logLine)?.value?.substringAfter("(")?.substringBefore(")")
-                ?.trimStart()?.toShort()
-                ?: -1
-            return LogInfo(
-                pid = pid,
-                timestamp = timestampRegex.find(metadata)?.value ?: "",
-                // Assuming that no one insane used ( in their tag
-                tag = logLine.substringAfter("/").substringBefore("("),
-                level = metadata.last(),
-                message = logLine.substringAfter("):").trim(),
-            )
-        }
     }
 }

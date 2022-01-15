@@ -50,4 +50,41 @@ data class LogInfo(
     fun toRaw(): String {
         return "$timestamp $level/$tag($pid): $message"
     }
+
+    companion object {
+        private val timestampRegex =
+            Regex("^[0-9]{2}-[0-9]{2}\\s[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}")
+        private val pidRegex = Regex("\\(\\s*[0-9]+\\)")
+
+        /**
+         * Convert a line of log to a [LogInfo] object
+         *
+         * @param logLine the line to convert
+         * @return the converted object
+         */
+        fun fromLine(logLine: String): LogInfo {
+            // Filter event separators
+            if (logLine.startsWith("-")) {
+                return LogInfo(message = logLine)
+            }
+            // Log format:
+            // DD-MM HH:MM:SS.ssssss D/TAG( PID): message
+            val metadata = logLine.substringBefore("/")
+            val pid = try {
+                pidRegex.find(logLine)?.value?.substringAfter("(")?.substringBefore(")")
+                    ?.trimStart()?.toShort()
+                    ?: -1
+            } catch (e: NumberFormatException) {
+                -1
+            }
+            return LogInfo(
+                pid = pid,
+                timestamp = timestampRegex.find(metadata)?.value ?: "",
+                // Assuming that no one insane used ( in their tag
+                tag = logLine.substringAfter("/").substringBefore("("),
+                level = metadata.last(),
+                message = logLine.substringAfter("):").trim(),
+            )
+        }
+    }
 }

@@ -68,9 +68,11 @@ class LogcatListAdapter(context: Context) : RecyclerView.Adapter<LogcatListViewH
         holder.apply {
             setData(data)
             if (!data.logInfo.hasOnlyMessage()) {
-                val color = colorMap[data.logInfo.level]!!
-                levelView.setBackgroundColor(color.first)
-                levelView.setTextColor(color.second)
+                val color = colorMap[data.logInfo.level]
+                if (color != null) {
+                    levelView.setBackgroundColor(color.first)
+                    levelView.setTextColor(color.second)
+                }
             }
         }
     }
