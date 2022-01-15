@@ -1,9 +1,10 @@
 plugins {
     id 'com.android.application'
-    id 'dagger.hilt.android.plugin'
     id 'kotlin-android'
     id 'kotlin-kapt'
 }
+
+ext.compiled_framework_dir = '../../../../out/soong/.intermediates'
 
 android {
     compileSdk 31
@@ -28,6 +29,11 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+    sourceSets {
+        main {
+            java.srcDirs += ["${compiled_framework_dir}/packages/apps/MatlogX/app/MatlogX/android_common/kapt/gen/sources/"]
+        }
     }
 }
 
