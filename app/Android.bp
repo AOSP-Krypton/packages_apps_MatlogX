@@ -46,9 +46,6 @@ android_app {
     plugins: [
         "dagger2-compiler",
     ],
-    kotlincflags: [
-        "-Xallow-result-return-type",
-    ],
 }
 
 prebuilt_etc {

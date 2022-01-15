@@ -18,6 +18,8 @@ package com.krypton.matlogx.util
 
 import android.content.Context
 
+import com.krypton.matlogx.data.Result
+
 import dagger.hilt.android.qualifiers.ApplicationContext
 
 import java.io.File

@@ -26,9 +26,24 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
 /**
- * A reader class to reads lines from system logcat.
+ * A utility object to reads lines from system logcat.
  */
-class LogcatReader {
+object LogcatReader {
+
+    private const val LOGCAT_BIN = "logcat"
+
+    /**
+     * Command line options and supported values for logcat binary.
+     * There are many other options besides those given here, these
+     * are the only one's being used right now.
+     * Use of these options can be seen with logcat --help command.
+     */
+    const val OPTION_BUFFER = "-b"
+
+    //--Make it public if needed--//
+    private const val OPTION_DEFAULT_SILENT = "-s"
+
+    private const val OPTION_DUMP = "-d"
 
     /**
      * Read logcat with the given command line args.
@@ -36,6 +51,7 @@ class LogcatReader {
      * @param args command line arguments for logcat.
      * @param tags a list of string tags to filter the logs.
      * @param query string to filter the logs.
+     * @param logLevel the log level below which the logs should be discarded.
      * @return a [Flow] of [LogInfo].
      */
     // Ignore this, flow context is of IO Dispatcher and yet Android Studio is not able to sense it
@@ -46,23 +62,33 @@ class LogcatReader {
         query: String?,
         logLevel: String,
     ): Flow<LogInfo> {
-        val argsList = mutableListOf(
-            LOGCAT_BIN,
-            "*:$logLevel",
-            "--format=time,usec"
-        )
-        appendArgs(args, argsList)
-        appendTags(tags, argsList)
         return flow {
-            getInputStream(argsList).bufferedReader().use {
+            getInputStream(args, tags, query, logLevel).bufferedReader().use {
                 while (true) {
-                    val line = it.readLine()
-                    if (query == null || line.contains(query, true)) {
-                        emit(LogInfo.fromLine(it.readLine()))
-                    }
+                    emit(LogInfo.fromLine(it.readLine()))
                 }
             }
         }.flowOn(Dispatchers.IO)
+    }
+
+    /**
+     * Get a snapshot of current logcat stream.
+     *
+     * @param args command line arguments for logcat.
+     * @param tags a list of string tags to filter the logs.
+     * @param query string to filter the logs.
+     * @param logLevel the log level below which the logs should be discarded.
+     * @return current system logs joined to a string.
+     */
+    fun getRawLogs(
+        args: Map<String, String?>? = null,
+        tags: List<String>? = null,
+        query: String?,
+        logLevel: String,
+    ): String {
+        return getInputStream(args, tags, query, logLevel, dump = true).bufferedReader().use { br ->
+            br.readText()
+        }
     }
 
     /**
@@ -71,6 +97,7 @@ class LogcatReader {
      * @param args command line arguments for logcat.
      * @param tags a list of string tags to filter the logs.
      * @param query string to filter the logs.
+     * * @param logLevel the log level below which the logs should be discarded.
      * @return the current size of logs.
      */
     fun getSize(
@@ -78,23 +105,31 @@ class LogcatReader {
         tags: List<String>? = null,
         query: String?,
         logLevel: String,
-    ): Int {
+    ): Int = getInputStream(args, tags, query, logLevel, dump = true).bufferedReader().use { br ->
+        br.lines().count().toInt()
+    }
+
+    private fun getInputStream(
+        args: Map<String, String?>? = null,
+        tags: List<String>? = null,
+        query: String?,
+        logLevel: String,
+        dump: Boolean = false,
+    ): InputStream {
         val argsList = mutableListOf(
             LOGCAT_BIN,
             "*:$logLevel",
+            "--format=time,usec"
         )
         appendArgs(args, argsList)
         appendTags(tags, argsList)
-        argsList.add(OPTION_DUMP)
-        return getInputStream(argsList).bufferedReader().use { br ->
-            br.lines().filter {
-                query?.isBlank() != false || it.contains(query, true)
-            }.count().toInt()
+        if (query?.isNotBlank() == true) {
+            argsList.add("| grep -i $query")
         }
-    }
-
-    private fun getInputStream(commands: List<String>): InputStream {
-        val process = ProcessBuilder(commands).start()
+        if (dump) {
+            argsList.add(OPTION_DUMP)
+        }
+        val process = ProcessBuilder("/bin/sh", "-c", argsList.joinToString(" ")).start()
         process.outputStream.close()
         return process.inputStream
     }
@@ -116,22 +151,5 @@ class LogcatReader {
             tags.forEach { list.add(it) }
         }
         return list
-    }
-
-    companion object {
-        private const val LOGCAT_BIN = "logcat"
-
-        /**
-         * Command line options and supported values for logcat binary.
-         * There are many other options besides those given here, these
-         * are the only one's being used right now.
-         * Use of these options can be seen with logcat --help command.
-         */
-        const val OPTION_BUFFER = "-b"
-
-        //--Make it public if needed--//
-        private const val OPTION_DEFAULT_SILENT = "-s"
-
-        private const val OPTION_DUMP = "-d"
     }
 }

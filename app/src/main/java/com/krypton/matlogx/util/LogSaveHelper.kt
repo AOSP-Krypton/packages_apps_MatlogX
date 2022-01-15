@@ -16,6 +16,8 @@
 
 package com.krypton.matlogx.util
 
+import com.krypton.matlogx.data.Result
+
 import java.io.File
 import java.io.OutputStream
 

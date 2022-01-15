@@ -21,6 +21,7 @@ import android.widget.Toast
 
 import com.krypton.matlogx.R
 import com.krypton.matlogx.data.LogInfo
+import com.krypton.matlogx.data.Result
 import com.krypton.matlogx.reader.LogcatReader
 import com.krypton.matlogx.util.FileUtil
 import com.krypton.matlogx.util.LogSaveHelper
@@ -55,8 +56,7 @@ class LogcatRepository @Inject constructor(
         val args = mapOf<String, String?>(
             LogcatReader.OPTION_BUFFER to settingsHelper.getLogcatBuffers().joinToString(",")
         )
-        val logcatReader = LogcatReader()
-        return logcatReader.read(
+        return LogcatReader.read(
             args = args,
             tags = null,
             query = query,
@@ -74,8 +74,7 @@ class LogcatRepository @Inject constructor(
         val args = mapOf<String, String?>(
             LogcatReader.OPTION_BUFFER to settingsHelper.getLogcatBuffers().joinToString(",")
         )
-        val logcatReader = LogcatReader()
-        return logcatReader.getSize(
+        return LogcatReader.getSize(
             args = args,
             tags = null,
             query,
@@ -120,21 +119,30 @@ class LogcatRepository @Inject constructor(
     /**
      * Saves given list of [LogInfo] as a zip file.
      *
-     * @param list the list to save.
+     * @param query optional string to filter logs.
      * @param includeDeviceInfo whether to include device info inside the zip.
      * @param outputStream the [OutputStream] to write to.
      * @return a result with the [File] (or an exception if failed) that was saved.
      */
     suspend fun saveLogAsZip(
-        list: List<LogInfo>,
+        query: String?,
         includeDeviceInfo: Boolean,
         timestamp: String,
         outputStream: OutputStream,
     ): Result<File> {
+        val args = mapOf<String, String?>(
+            LogcatReader.OPTION_BUFFER to settingsHelper.getLogcatBuffers().joinToString(",")
+        )
+        val logs = LogcatReader.getRawLogs(
+            args = args,
+            tags = null,
+            query,
+            getLogLevel(),
+        )
         val result = withContext(Dispatchers.IO) {
             LogSaveHelper.saveZip(
                 fileUtil,
-                list.joinToString("\n") { it.toRaw() },
+                logs,
                 includeDeviceInfo,
                 timestamp,
                 outputStream

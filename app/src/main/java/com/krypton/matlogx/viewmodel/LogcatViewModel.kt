@@ -107,7 +107,7 @@ class LogcatViewModel @Inject constructor(
     fun saveLogAsZip(timestamp: String, outputStream: OutputStream) {
         viewModelScope.launch {
             val result = logcatRepository.saveLogAsZip(
-                logList.map { it.logInfo }.toList(),
+                cachedQuery,
                 includeDeviceInfo,
                 timestamp,
                 outputStream
