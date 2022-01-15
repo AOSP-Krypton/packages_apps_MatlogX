@@ -20,7 +20,9 @@ import android.Manifest
 import android.app.SearchManager
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.provider.SearchRecentSuggestions
 import android.view.Menu
 import android.view.MenuItem
@@ -28,6 +30,7 @@ import android.view.View
 import android.widget.ProgressBar
 import android.widget.SearchView
 
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -44,6 +47,9 @@ import com.krypton.matlogx.viewmodel.LogcatViewModel
 
 import dagger.hilt.android.AndroidEntryPoint
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 @AndroidEntryPoint
 class LogcatActivity : AppCompatActivity() {
 
@@ -58,6 +64,31 @@ class LogcatActivity : AppCompatActivity() {
     private lateinit var bottomScrollButton: FloatingActionButton
 
     private var internalScroll = false
+
+    private val documentContract =
+        registerForActivityResult(ActivityResultContracts.CreateDocument()) {
+            if (it != null) {
+                val fileName = getFileNameFromUri(it)
+                if (fileName != null) {
+                    logcatViewModel.saveLogAsZip(
+                        fileName.substringAfter(FILE_PREFIX).substringBefore(FILE_SUFFIX),
+                        contentResolver.openOutputStream(it)!!
+                    )
+                }
+            }
+        }
+
+    private fun getFileNameFromUri(uri: Uri): String? {
+        val cursor = contentResolver.query(uri, null, null, null, null, null)
+        if (cursor?.moveToFirst() == true) {
+            val columnIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (columnIndex > 0) {
+                return cursor.getString(columnIndex)
+            }
+        }
+        cursor?.close()
+        return null
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -232,6 +263,10 @@ class LogcatActivity : AppCompatActivity() {
                 showLogLevelDialog()
                 true
             }
+            R.id.save_zip -> {
+                showIncludeDeviceInfoDialog()
+                true
+            }
             R.id.settings -> {
                 startActivity(Intent(this, SettingsActivity::class.java))
                 true
@@ -251,5 +286,31 @@ class LogcatActivity : AppCompatActivity() {
                 dialog.dismiss()
             }
             .show()
+    }
+
+    private fun showIncludeDeviceInfoDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.save_zip)
+            .setCancelable(true)
+            .setMultiChoiceItems(
+                R.array.save_zip_items,
+                booleanArrayOf(logcatViewModel.includeDeviceInfo)
+            ) { _, which, checked ->
+                logcatViewModel.includeDeviceInfo = which == 0 && checked
+            }
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                documentContract.launch(getFormattedFileName())
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    companion object {
+        private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss")
+        private const val FILE_PREFIX = "Log-"
+        private const val FILE_SUFFIX = ".zip"
+        private fun getFormattedFileName(): String {
+            return "$FILE_PREFIX${LocalDateTime.now().format(dateTimeFormatter)}$FILE_SUFFIX"
+        }
     }
 }

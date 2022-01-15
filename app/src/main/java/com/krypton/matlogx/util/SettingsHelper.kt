@@ -109,6 +109,25 @@ class SettingsHelper @Inject constructor(
         listeners.add(listener)
     }
 
+    /**
+     * Whether to include device information in logs.
+     *
+     * @return the saved value.
+     */
+    fun getIncludeDeviceInfo(): Boolean =
+        sharedPreferences.getBoolean(PREF_KEY_INCLUDE_DEVICE_INFO, INCLUDE_DEVICE_INFO_DEFAULT)
+
+    /**
+     * Save include device information preference.
+     *
+     * @param include the value to save.
+     */
+    fun setIncludeDeviceInfo(include: Boolean) {
+        sharedPreferences.edit(commit = true) {
+            putBoolean(PREF_KEY_INCLUDE_DEVICE_INFO, include)
+        }
+    }
+
     companion object {
         private const val PREF_FILE_NAME = "matlogx_shared_preferences"
 
@@ -121,5 +140,8 @@ class SettingsHelper @Inject constructor(
 
         private const val PREF_KEY_LOG_LEVEL = "key_log_level"
         private const val LOG_LEVEL_DEFAULT = "V"
+
+        private const val PREF_KEY_INCLUDE_DEVICE_INFO = "key_include_device_info"
+        private const val INCLUDE_DEVICE_INFO_DEFAULT = false
     }
 }

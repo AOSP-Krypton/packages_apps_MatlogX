@@ -29,6 +29,11 @@
     <string name="string_not_found_in_logs">String not found in logs</string>
     <string name="fast_scroll_to_bottom_button">Fast scroll to bottom button</string>
     <string name="fast_scroll_to_top_button">Fast scroll to top button</string>
+    <string name="log_level">Log level</string>
+    <string name="save_zip">Save as zip</string>
+    <string name="include_device_info">Include device information</string>
+    <string name="log_saved_successfully">Log saved successfully</string>
+    <string name="failed_to_save_log">Failed to save log: <xliff:g id="error" example="IOException: Failed to write">%1$s</xliff:g></string>
 
     <!-- Settings -->
     <string name="settings">Settings</string>
@@ -36,5 +41,4 @@
     <string name="log_display_limit">Log display limit</string>
     <string name="log_display_limit_summary_placeholder">Show only the last <xliff:g example="10000" id="limit">%1$d</xliff:g> logs to avoid going out of memory.</string>
     <string name="log_buffers">Log buffers</string>
-    <string name="log_level">Log level</string>
 </resources>

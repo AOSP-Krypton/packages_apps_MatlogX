@@ -40,4 +40,14 @@ data class LogInfo(
      * @return true if this represents only a message.
      */
     fun hasOnlyMessage() = level.isWhitespace()
+
+    /**
+     * Flattens this object to a raw string, just like
+     * the one this object was mapped from.
+     *
+     * @return the flattened raw string.
+     */
+    fun toRaw(): String {
+        return "$timestamp $level/$tag($pid): $message"
+    }
 }

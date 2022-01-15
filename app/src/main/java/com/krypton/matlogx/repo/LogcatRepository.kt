@@ -16,18 +16,33 @@
 
 package com.krypton.matlogx.repo
 
+import android.content.Context
+import android.widget.Toast
+
+import com.krypton.matlogx.R
 import com.krypton.matlogx.data.LogInfo
 import com.krypton.matlogx.reader.LogcatReader
+import com.krypton.matlogx.util.FileUtil
+import com.krypton.matlogx.util.LogSaveHelper
 import com.krypton.matlogx.util.SettingsHelper
+
+import dagger.hilt.android.qualifiers.ApplicationContext
+
+import java.io.File
+import java.io.OutputStream
 
 import javax.inject.Inject
 import javax.inject.Singleton
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 
 @Singleton
 class LogcatRepository @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val settingsHelper: SettingsHelper,
+    private val fileUtil: FileUtil,
 ) {
 
     /**
@@ -100,5 +115,58 @@ class LogcatRepository @Inject constructor(
      */
     fun registerConfigurationChangeListener(listener: () -> Unit) {
         settingsHelper.registerConfigurationChangeListener(listener)
+    }
+
+    /**
+     * Saves given list of [LogInfo] as a zip file.
+     *
+     * @param list the list to save.
+     * @param includeDeviceInfo whether to include device info inside the zip.
+     * @param outputStream the [OutputStream] to write to.
+     * @return a result with the [File] (or an exception if failed) that was saved.
+     */
+    suspend fun saveLogAsZip(
+        list: List<LogInfo>,
+        includeDeviceInfo: Boolean,
+        timestamp: String,
+        outputStream: OutputStream,
+    ): Result<File> {
+        val result = withContext(Dispatchers.IO) {
+            LogSaveHelper.saveZip(
+                fileUtil,
+                list.joinToString("\n") { it.toRaw() },
+                includeDeviceInfo,
+                timestamp,
+                outputStream
+            )
+        }
+        if (result.isSuccess) {
+            Toast.makeText(context, R.string.log_saved_successfully, Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(
+                context,
+                context.getString(R.string.failed_to_save_log, result.exceptionOrNull()?.message),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+        return result
+    }
+
+    /**
+     * Whether to include device information in logs.
+     *
+     * @return the saved value.
+     */
+    fun getIncludeDeviceInfo(): Boolean {
+        return settingsHelper.getIncludeDeviceInfo()
+    }
+
+    /**
+     * Save include device information preference.
+     *
+     * @param include the value to save.
+     */
+    fun setIncludeDeviceInfo(include: Boolean) {
+        settingsHelper.setIncludeDeviceInfo(include)
     }
 }

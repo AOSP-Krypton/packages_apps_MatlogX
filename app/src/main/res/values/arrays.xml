@@ -31,4 +31,8 @@
         <item>Error</item>
         <item>Fatal</item>
     </array>
+
+    <string-array name="save_zip_items">
+        <item>@string/include_device_info</item>
+    </string-array>
 </resources>

@@ -30,6 +30,10 @@
         android:title="@string/log_level"
         app:showAsAction="never" />
 
+    <item android:id="@+id/save_zip"
+        android:title="@string/save_zip"
+        app:showAsAction="never" />
+
     <item android:id="@+id/settings"
         android:title="@string/settings"
         app:showAsAction="never" />

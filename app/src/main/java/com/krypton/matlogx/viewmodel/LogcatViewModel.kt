@@ -17,6 +17,7 @@
 package com.krypton.matlogx.viewmodel
 
 import android.util.ArrayMap
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -27,6 +28,7 @@ import com.krypton.matlogx.repo.LogcatRepository
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 
+import java.io.OutputStream
 import java.util.LinkedList
 
 import javax.inject.Inject
@@ -41,7 +43,6 @@ import kotlinx.coroutines.launch
 class LogcatViewModel @Inject constructor(
     private val logcatRepository: LogcatRepository
 ) : ViewModel() {
-
     private val logcatLiveData = MutableLiveData<List<LogcatListData>>()
     private val logList = LinkedList<LogcatListData>()
     private var job: Job? = null
@@ -72,6 +73,14 @@ class LogcatViewModel @Inject constructor(
             }
         }
 
+    var includeDeviceInfo: Boolean = logcatRepository.getIncludeDeviceInfo()
+        set(value) {
+            if (field != value) {
+                field = value
+                logcatRepository.setIncludeDeviceInfo(value)
+            }
+        }
+
     init {
         // Start reading on init
         startJob()
@@ -91,6 +100,20 @@ class LogcatViewModel @Inject constructor(
         if (cachedQuery == query) return
         cachedQuery = query
         restartLogcat()
+    }
+
+    /**
+     * Save current [logList] to a zip file.
+     */
+    fun saveLogAsZip(timestamp: String, outputStream: OutputStream) {
+        viewModelScope.launch {
+            val result = logcatRepository.saveLogAsZip(
+                logList.map { it.logInfo }.toList(),
+                includeDeviceInfo,
+                timestamp,
+                outputStream
+            )
+        }
     }
 
     private fun restartLogcat() {
