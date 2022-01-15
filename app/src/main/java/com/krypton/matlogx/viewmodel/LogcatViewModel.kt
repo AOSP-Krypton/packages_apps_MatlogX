@@ -22,7 +22,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 
-import com.krypton.matlogx.data.LogInfo
+import com.krypton.matlogx.data.LogcatListData
 import com.krypton.matlogx.repo.LogcatRepository
 
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,6 +34,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectIndexed
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -41,8 +42,8 @@ class LogcatViewModel @Inject constructor(
     private val logcatRepository: LogcatRepository
 ) : ViewModel() {
 
-    private val logcatLiveData = MutableLiveData<List<LogInfo>>()
-    private val logList = LinkedList<LogInfo>()
+    private val logcatLiveData = MutableLiveData<List<LogcatListData>>()
+    private val logList = LinkedList<LogcatListData>()
     private var job: Job? = null
 
     // Whether livedata should be updated when new log info is collected from repository
@@ -82,9 +83,9 @@ class LogcatViewModel @Inject constructor(
     /**
      * Get a [LiveData] for view to observe.
      *
-     * @return [LiveData] of a [List] of [LogInfo].
+     * @return [LiveData] of a [List] of [LogcatListData].
      */
-    fun getLogcatLiveData(): LiveData<List<LogInfo>> = logcatLiveData
+    fun getLogcatLiveData(): LiveData<List<LogcatListData>> = logcatLiveData
 
     fun handleSearch(query: String?) {
         if (cachedQuery == query) return
@@ -113,20 +114,21 @@ class LogcatViewModel @Inject constructor(
             val limit = logcatRepository.getLogcatSizeLimit()
             val size = logcatRepository.getLogcatSize(cachedQuery)
             val actualLimit = minOf(limit, size)
-            logcatRepository.getLogcatStream(cachedQuery).cancellable()
-                .collectIndexed { index, logInfo ->
-                    if (logList.size == actualLimit) {
-                        logList.removeFirst()
-                    }
-                    logList.add(logInfo)
-                    // This restriction is here so that the recycler view won't struggle
-                    // when elements are pumped in one by one rapidly for the first time.
-                    // Displaying a large set of logs first and then pushing the rest one by one
-                    // is better.
-                    if (!logcatUpdatePaused && ((index >= (actualLimit - 1)) || (cachedQuery?.isNotBlank() == true))) {
-                        logcatLiveData.value = logList.toList()
-                    }
+            logcatRepository.getLogcatStream(cachedQuery).cancellable().map {
+                LogcatListData(it, false)
+            }.collectIndexed { index, logInfo ->
+                if (logList.size == actualLimit) {
+                    logList.removeFirst()
                 }
+                logList.add(logInfo)
+                // This restriction is here so that the recycler view won't struggle
+                // when elements are pumped in one by one rapidly for the first time.
+                // Displaying a large set of logs first and then pushing the rest one by one
+                // is better.
+                if (!logcatUpdatePaused && ((index >= (actualLimit - 1)) || (cachedQuery?.isNotBlank() == true))) {
+                    logcatLiveData.value = logList.toList()
+                }
+            }
         }
     }
 

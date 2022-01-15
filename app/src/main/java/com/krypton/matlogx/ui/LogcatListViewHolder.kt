@@ -22,7 +22,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 import com.krypton.matlogx.R
-import com.krypton.matlogx.data.LogInfo
+import com.krypton.matlogx.data.LogcatListData
 
 class LogcatListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val pidView: TextView = itemView.findViewById(R.id.pid)
@@ -31,24 +31,12 @@ class LogcatListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val messageView: TextView = itemView.findViewById(R.id.message)
     val levelView: TextView = itemView.findViewById(R.id.level)
 
-    private var isExpanded = false
-    private var logInfo: LogInfo? = null
+    private lateinit var data: LogcatListData
 
-    init {
-        updateView()
-    }
-
-    private fun updateView() {
-        pidView.visibility = if (isExpanded && (logInfo?.hasOnlyMessage() != true)) View.VISIBLE else View.GONE
-        timestampView.visibility = if (isExpanded && (logInfo?.hasOnlyMessage() != true)) View.VISIBLE else View.GONE
-        tagView.isSingleLine = !isExpanded
-        messageView.isSingleLine = !isExpanded
-    }
-
-    fun setLogInfo(logInfo: LogInfo) {
-        if (this.logInfo != logInfo && isExpanded) {
-            isExpanded = false
-        }
+    fun setData(data: LogcatListData) {
+        if (this::data.isInitialized && this.data == data) return
+        this.data = data
+        val logInfo = data.logInfo
         if (logInfo.hasOnlyMessage()) {
             pidView.visibility = View.GONE
             timestampView.visibility = View.GONE
@@ -62,11 +50,18 @@ class LogcatListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             levelView.text = logInfo.level.toString()
             levelView.visibility = View.VISIBLE
             itemView.setOnClickListener {
-                isExpanded = !isExpanded
+                data.isExpanded = !data.isExpanded
                 updateView()
             }
         }
         messageView.text = logInfo.message
         updateView()
+    }
+
+    private fun updateView() {
+        pidView.visibility = if (data.isExpanded && !data.logInfo.hasOnlyMessage()) View.VISIBLE else View.GONE
+        timestampView.visibility = if (data.isExpanded && !data.logInfo.hasOnlyMessage()) View.VISIBLE else View.GONE
+        tagView.isSingleLine = !data.isExpanded
+        messageView.isSingleLine = !data.isExpanded
     }
 }

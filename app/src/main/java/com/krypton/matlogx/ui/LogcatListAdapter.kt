@@ -23,12 +23,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 
 import com.krypton.matlogx.R
-import com.krypton.matlogx.data.LogInfo
+import com.krypton.matlogx.data.LogcatListData
 
 class LogcatListAdapter(context: Context) : RecyclerView.Adapter<LogcatListViewHolder>() {
 
     private val layoutInflater = LayoutInflater.from(context)
-    private var list = emptyList<LogInfo>()
+    private var list = emptyList<LogcatListData>()
 
     // Background & Foreground color map for different log levels
     private val colorMap = mapOf(
@@ -64,11 +64,11 @@ class LogcatListAdapter(context: Context) : RecyclerView.Adapter<LogcatListViewH
     }
 
     override fun onBindViewHolder(holder: LogcatListViewHolder, position: Int) {
-        val logInfo = list[position]
+        val data = list[position]
         holder.apply {
-            setLogInfo(logInfo)
-            if (!logInfo.hasOnlyMessage()) {
-                val color = colorMap[logInfo.level]!!
+            setData(data)
+            if (!data.logInfo.hasOnlyMessage()) {
+                val color = colorMap[data.logInfo.level]!!
                 levelView.setBackgroundColor(color.first)
                 levelView.setTextColor(color.second)
             }
@@ -85,7 +85,7 @@ class LogcatListAdapter(context: Context) : RecyclerView.Adapter<LogcatListViewH
      *
      * @param newList the new list to be submitted
      */
-    fun submitList(newList: List<LogInfo>) {
+    fun submitList(newList: List<LogcatListData>) {
         // Incremental list
         when {
             newList.size == list.size -> {
