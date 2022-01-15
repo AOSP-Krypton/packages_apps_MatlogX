@@ -20,5 +20,5 @@ import android.app.Application
 
 import dagger.hilt.android.HiltAndroidApp
 
-@HiltAndroidApp
-class LogcatApp : Application()
+@HiltAndroidApp(Application::class)
+class LogcatApp : Hilt_LogcatApp()

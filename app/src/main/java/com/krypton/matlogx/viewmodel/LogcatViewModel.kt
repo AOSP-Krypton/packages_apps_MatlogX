@@ -34,7 +34,6 @@ import java.util.LinkedList
 import javax.inject.Inject
 
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -137,7 +136,7 @@ class LogcatViewModel @Inject constructor(
             val limit = logcatRepository.getLogcatSizeLimit()
             val size = logcatRepository.getLogcatSize(cachedQuery)
             val actualLimit = minOf(limit, size)
-            logcatRepository.getLogcatStream(cachedQuery).cancellable().map {
+            logcatRepository.getLogcatStream(cachedQuery).map {
                 LogcatListData(it, false)
             }.collectIndexed { index, logInfo ->
                 if (logList.size == actualLimit) {

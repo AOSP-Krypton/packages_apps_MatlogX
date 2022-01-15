@@ -30,8 +30,8 @@ import dagger.hilt.android.AndroidEntryPoint
 
 import javax.inject.Inject
 
-@AndroidEntryPoint
-class SettingsFragment : PreferenceFragmentCompat() {
+@AndroidEntryPoint(PreferenceFragmentCompat::class)
+class SettingsFragment : Hilt_SettingsFragment() {
 
     @Inject
     lateinit var settingsHelper: SettingsHelper

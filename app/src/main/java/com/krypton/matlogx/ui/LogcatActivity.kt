@@ -50,8 +50,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-@AndroidEntryPoint
-class LogcatActivity : AppCompatActivity() {
+@AndroidEntryPoint(AppCompatActivity::class)
+class LogcatActivity : Hilt_LogcatActivity() {
 
     private val logcatViewModel: LogcatViewModel by viewModels()
     private lateinit var logcatListView: RecyclerView

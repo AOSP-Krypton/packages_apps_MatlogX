@@ -21,11 +21,9 @@ import com.krypton.matlogx.data.LogInfo
 import java.io.InputStream
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.isActive
 
 /**
  * A reader class to reads lines from system logcat.
@@ -57,7 +55,7 @@ class LogcatReader {
         appendTags(tags, argsList)
         return flow {
             getInputStream(argsList).bufferedReader().use {
-                while (currentCoroutineContext().isActive) {
+                while (true) {
                     it.readLine()?.takeIf { line ->
                         line.isNotBlank() && (query == null || line.contains(query, true))
                     }?.let { line ->

@@ -25,8 +25,8 @@ import com.krypton.matlogx.R
 
 import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
-class SettingsActivity: AppCompatActivity() {
+@AndroidEntryPoint(AppCompatActivity::class)
+class SettingsActivity: Hilt_SettingsActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
