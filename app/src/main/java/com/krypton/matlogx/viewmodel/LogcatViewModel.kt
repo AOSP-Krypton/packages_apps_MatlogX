@@ -44,7 +44,8 @@ import kotlinx.coroutines.launch
 class LogcatViewModel @Inject constructor(
     private val logcatRepository: LogcatRepository
 ) : ViewModel() {
-    private val logcatLiveData = MutableLiveData<List<LogcatListData>>()
+    private val _logcatLiveData = MutableLiveData<List<LogcatListData>>()
+    val logcatLiveData: LiveData<List<LogcatListData>> = _logcatLiveData
     private val logList = LinkedList<LogcatListData>()
     private var job: Job? = null
 
@@ -93,13 +94,6 @@ class LogcatViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Get a [LiveData] for view to observe.
-     *
-     * @return [LiveData] of a [List] of [LogcatListData].
-     */
-    fun getLogcatLiveData(): LiveData<List<LogcatListData>> = logcatLiveData
-
     fun handleSearch(query: String?) {
         if (cachedQuery == query) return
         cachedQuery = query
@@ -122,7 +116,7 @@ class LogcatViewModel @Inject constructor(
 
     private fun restartLogcat() {
         job?.cancel()
-        logcatLiveData.value = emptyList()
+        _logcatLiveData.value = emptyList()
         startJob()
     }
 
@@ -136,7 +130,7 @@ class LogcatViewModel @Inject constructor(
 
             // Start fresh on a new job
             logList.clear()
-            logcatLiveData.value = emptyList()
+            _logcatLiveData.value = emptyList()
 
             val limit = logcatRepository.getLogcatSizeLimit()
             val size = logcatRepository.getLogcatSize(cachedQuery)
@@ -153,7 +147,7 @@ class LogcatViewModel @Inject constructor(
                 // Displaying a large set of logs first and then pushing the rest one by one
                 // is better.
                 if (!logcatUpdatePaused && ((index >= (actualLimit - 1)) || (cachedQuery?.isNotBlank() == true))) {
-                    logcatLiveData.value = logList.toList()
+                    _logcatLiveData.value = logList.toList()
                 }
             }
         }

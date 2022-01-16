@@ -106,7 +106,7 @@ class LogcatActivity : Hilt_LogcatActivity() {
             return
         }
         setupListView()
-        logcatViewModel.getLogcatLiveData().observe(this) {
+        logcatViewModel.logcatLiveData.observe(this) {
             loadingProgressBar.visibility = if (it.isEmpty()) View.VISIBLE else View.GONE
             logcatListAdapter.submitList(it)
             if (logcatListAdapter.itemCount > 0 && logcatViewModel.autoScroll) {
