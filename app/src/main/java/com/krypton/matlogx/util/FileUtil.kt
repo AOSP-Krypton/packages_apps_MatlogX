@@ -17,16 +17,19 @@
 package com.krypton.matlogx.util
 
 import android.content.Context
+import android.net.Uri
+
+import androidx.documentfile.provider.DocumentFile
 
 import com.krypton.matlogx.data.Result
 
 import dagger.hilt.android.qualifiers.ApplicationContext
 
-import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
-import java.io.OutputStream
-import java.nio.file.Files
+import java.lang.Exception
+import java.nio.charset.StandardCharsets
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -40,86 +43,76 @@ import javax.inject.Singleton
 class FileUtil @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    private val cacheDir = context.cacheDir
-
     /**
-     * Write a string to a file.
+     * Saves logs to a zip file, optionally including device info.
      *
-     * @param name the name of the file to create.
-     * @param content the content to write to the file.
-     * @return a [Result] indicating whether the write was success or not, including
-     *         the file or an exception.
+     * @param log the log content to save.
+     * @param includeDeviceInfo whether to include device info.
+     * @return a [Result] indicating whether the operation was successful or not,
+     *         type parameter represents the saved file.
      */
-    fun writeToFile(name: String, content: String): Result<File> {
-        if (!cacheDir.isDirectory) {
-            return Result.failure(IllegalStateException("Cache dir doesn't exist"))
+    fun saveZip(
+        log: String,
+        includeDeviceInfo: Boolean,
+    ): Result<Uri> {
+        // Create a sub directory inside the directory we have access.
+        val persistedUris = context.contentResolver.persistedUriPermissions
+        val treeUriPerm = persistedUris.first()
+        if (!treeUriPerm.isReadPermission || !treeUriPerm.isWritePermission)
+            return Result.failure(IllegalStateException("Does not have r/w permission"))
+        val treeFile = DocumentFile.fromTreeUri(context, treeUriPerm.uri)
+            ?: return Result.failure(Exception("Unable to open document tree"))
+        val subDir = treeFile.findFile(DIRECTORY_NAME) ?: treeFile.createDirectory(DIRECTORY_NAME)
+        ?: return Result.failure(Exception("Unable to create sub directory"))
+
+        // Zip up all the contents
+        val timestamp = getTimestamp()
+        val contentsToZip = mutableMapOf<String, ByteArray>()
+        contentsToZip["$timestamp.log"] = log.toByteArray(StandardCharsets.UTF_8)
+        if (includeDeviceInfo) {
+            contentsToZip[DEVICE_INFO_FILE] =
+                DeviceInfo.toRawString().toByteArray(StandardCharsets.UTF_8)
         }
-        val file = File(cacheDir, name)
-        return try {
-            FileOutputStream(file).bufferedWriter().use {
-                it.write(content)
-                it.flush()
-            }
-            Result.success(file)
-        } catch (e: IOException) {
-            Result.failure(e)
-        }
+        val zipFile = subDir.createFile("application/zip", "$FILE_PREFIX-$timestamp")
+            ?: return Result.failure(Exception("Failed to create zip file"))
+        return zip(contentsToZip, zipFile)
     }
-
-    /**
-     * Write a file to an output stream and closes it at the end.
-     *
-     * @param file the file to write into the output stream.
-     * @param outputStream the stream to which the file should be written.
-     * @return a [Result] indicating whether it was successful or not.
-     */
-    fun writeToStreamAndClose(file: File, outputStream: OutputStream): Result<File> =
-        try {
-            outputStream.use {
-                it.write(Files.readAllBytes(file.toPath()))
-                it.flush()
-            }
-            Result.success(file)
-        } catch (e: IOException) {
-            Result.failure(e)
-        } finally {
-            outputStream.close()
-        }
 
     /**
      * Zip multiple files.
      *
-     * @param files the files to zip.
-     * @param name the file name for the zip file.
+     * @param fileMap the files to zip.
+     * @param zipFile the file name for the zip file.
      * @return a [Result] indicating whether the write was success or not, including
      *         the file or an exception.
      */
-    fun zip(vararg files: File, name: String): Result<File> {
-        if (!cacheDir.isDirectory) {
-            return Result.failure(IllegalStateException("Cache dir doesn't exist"))
-        }
-        val zipFile = File(cacheDir, name)
+    private fun zip(fileMap: Map<String, ByteArray>, zipFile: DocumentFile): Result<Uri> {
+        val uri = zipFile.uri
+        val outputStream = context.contentResolver.openOutputStream(uri)
+            ?: return Result.failure(Exception("Unable to open OutputStream from zip file"))
         return try {
-            ZipOutputStream(FileOutputStream(zipFile)).use {
-                files.forEach { file ->
-                    it.putNextEntry(ZipEntry(file.name))
-                    it.write(Files.readAllBytes(file.toPath()))
+            ZipOutputStream(outputStream).use {
+                fileMap.forEach { entry ->
+                    it.putNextEntry(ZipEntry(entry.key))
+                    it.write(entry.value)
                     it.flush()
                     it.closeEntry()
                 }
             }
-            Result.success(zipFile)
+            Result.success(uri)
         } catch (e: IOException) {
             Result.failure(e)
         }
     }
 
-    /**
-     * Deletes all file inside [cacheDir]
-     */
-    fun clearCache() {
-        if (cacheDir.isDirectory) {
-            cacheDir.listFiles()?.forEach { it.delete() }
+    companion object {
+        private const val DIRECTORY_NAME = "matlogx"
+
+        private const val DEVICE_INFO_FILE = "device_info.txt"
+        private const val FILE_PREFIX = "Logs"
+        private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss")
+        private fun getTimestamp(): String {
+            return LocalDateTime.now().format(dateTimeFormatter)
         }
     }
 }

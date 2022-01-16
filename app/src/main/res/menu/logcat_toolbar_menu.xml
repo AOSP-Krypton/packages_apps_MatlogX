@@ -26,6 +26,11 @@
         android:title="@string/pause"
         app:showAsAction="ifRoom" />
 
+    <item android:id="@+id/share_button"
+        android:title="@string/share"
+        android:icon="@android:drawable/ic_menu_share"
+        app:showAsAction="ifRoom" />
+
     <item android:id="@+id/log_level"
         android:title="@string/log_level"
         app:showAsAction="never" />

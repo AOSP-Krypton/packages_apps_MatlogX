@@ -5,9 +5,9 @@ package com.krypton.matlogx.data
  * has kotlin version 1.4.3 which has a weird bug when it's Result class
  * is used, we are forced to use this until the source gets upstreamed.
  */
-class Result<T>(
-    val data: T? = null,
-    val exception: Throwable? = null
+class Result<out T> private constructor(
+    private val data: T? = null,
+    private val exception: Throwable? = null
 ) {
     var isSuccess = false
     var isFailure = false

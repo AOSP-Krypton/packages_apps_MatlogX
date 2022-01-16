@@ -16,21 +16,15 @@
 
 package com.krypton.matlogx.repo
 
-import android.content.Context
-import android.widget.Toast
+import android.net.Uri
 
-import com.krypton.matlogx.R
 import com.krypton.matlogx.data.LogInfo
 import com.krypton.matlogx.data.Result
 import com.krypton.matlogx.reader.LogcatReader
 import com.krypton.matlogx.util.FileUtil
-import com.krypton.matlogx.util.LogSaveHelper
 import com.krypton.matlogx.util.SettingsHelper
 
-import dagger.hilt.android.qualifiers.ApplicationContext
-
 import java.io.File
-import java.io.OutputStream
 
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -41,7 +35,6 @@ import kotlinx.coroutines.withContext
 
 @Singleton
 class LogcatRepository @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val settingsHelper: SettingsHelper,
     private val fileUtil: FileUtil,
 ) {
@@ -121,15 +114,12 @@ class LogcatRepository @Inject constructor(
      *
      * @param query optional string to filter logs.
      * @param includeDeviceInfo whether to include device info inside the zip.
-     * @param outputStream the [OutputStream] to write to.
      * @return a result with the [File] (or an exception if failed) that was saved.
      */
     suspend fun saveLogAsZip(
         query: String?,
         includeDeviceInfo: Boolean,
-        timestamp: String,
-        outputStream: OutputStream,
-    ): Result<File> {
+    ): Result<Uri> {
         val args = mapOf<String, String?>(
             LogcatReader.OPTION_BUFFER to settingsHelper.getLogcatBuffers().joinToString(",")
         )
@@ -140,22 +130,10 @@ class LogcatRepository @Inject constructor(
             getLogLevel(),
         )
         val result = withContext(Dispatchers.IO) {
-            LogSaveHelper.saveZip(
-                fileUtil,
+            fileUtil.saveZip(
                 logs,
                 includeDeviceInfo,
-                timestamp,
-                outputStream
             )
-        }
-        if (result.isSuccess) {
-            Toast.makeText(context, R.string.log_saved_successfully, Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(
-                context,
-                context.getString(R.string.failed_to_save_log, result.exceptionOrNull()?.message),
-                Toast.LENGTH_SHORT
-            ).show()
         }
         return result
     }

@@ -22,13 +22,13 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.provider.OpenableColumns
 import android.provider.SearchRecentSuggestions
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.SearchView
+import android.widget.Toast
 
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -47,9 +47,6 @@ import com.krypton.matlogx.viewmodel.LogcatViewModel
 
 import dagger.hilt.android.AndroidEntryPoint
 
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-
 @AndroidEntryPoint(AppCompatActivity::class)
 class LogcatActivity : Hilt_LogcatActivity() {
 
@@ -65,30 +62,17 @@ class LogcatActivity : Hilt_LogcatActivity() {
 
     private var internalScroll = false
 
-    private val documentContract =
-        registerForActivityResult(ActivityResultContracts.CreateDocument()) {
-            if (it != null) {
-                val fileName = getFileNameFromUri(it)
-                if (fileName != null) {
-                    logcatViewModel.saveLogAsZip(
-                        fileName.substringAfter(FILE_PREFIX).substringBefore(FILE_SUFFIX),
-                        contentResolver.openOutputStream(it)!!
-                    )
-                }
-            }
-        }
+    // Internal flag that is set to true when share is clicked
+    // and is waiting for next update from viewmodel
+    private var shareLogs = false
 
-    private fun getFileNameFromUri(uri: Uri): String? {
-        val cursor = contentResolver.query(uri, null, null, null, null, null)
-        if (cursor?.moveToFirst() == true) {
-            val columnIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-            if (columnIndex > 0) {
-                return cursor.getString(columnIndex)
-            }
+    private var documentTreeLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) {
+            if (it == null) return@registerForActivityResult
+            val flags =
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            contentResolver.takePersistableUriPermission(it, flags)
         }
-        cursor?.close()
-        return null
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -119,17 +103,49 @@ class LogcatActivity : Hilt_LogcatActivity() {
         val status = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_LOGS)
         if (status == PackageManager.PERMISSION_DENIED) {
             showPermissionHelperDialog()
-        } else {
-            setupListView()
-            logcatViewModel.getLogcatLiveData().observe(this) {
-                loadingProgressBar.visibility = if (it.isEmpty()) View.VISIBLE else View.GONE
-                logcatListAdapter.submitList(it)
-                if (logcatListAdapter.itemCount > 0 && logcatViewModel.autoScroll) {
-                    internalScroll = true
-                    logcatListView.scrollToPosition(logcatListAdapter.itemCount - 1)
-                }
+            return
+        }
+        setupListView()
+        logcatViewModel.getLogcatLiveData().observe(this) {
+            loadingProgressBar.visibility = if (it.isEmpty()) View.VISIBLE else View.GONE
+            logcatListAdapter.submitList(it)
+            if (logcatListAdapter.itemCount > 0 && logcatViewModel.autoScroll) {
+                internalScroll = true
+                logcatListView.scrollToPosition(logcatListAdapter.itemCount - 1)
             }
         }
+        logcatViewModel.logSaveResult.observe(this) {
+            val result = it.getOrNull() ?: return@observe
+            if (result.isSuccess) {
+                if (!shareLogs) {
+                    Toast.makeText(this, R.string.log_saved_successfully, Toast.LENGTH_SHORT)
+                        .show()
+                } else {
+                    shareLogs = false
+                    startShare(result.getOrThrow())
+                }
+            } else {
+                Toast.makeText(
+                    this,
+                    getString(R.string.failed_to_save_log, result.exceptionOrNull()),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    private fun startShare(uri: Uri) {
+        val shareIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_STREAM, uri)
+            type = "application/zip"
+        }
+        startActivity(Intent.createChooser(shareIntent, null))
+    }
+
+    override fun onResume() {
+        super.onResume()
+        checkUriPermissions()
     }
 
     private fun showPermissionHelperDialog() {
@@ -142,6 +158,12 @@ class LogcatActivity : Hilt_LogcatActivity() {
             }
             .setCancelable(false)
             .show()
+    }
+
+    private fun checkUriPermissions() {
+        if (contentResolver.persistedUriPermissions.isEmpty()) {
+            documentTreeLauncher.launch(null)
+        }
     }
 
     private fun setupListView() {
@@ -259,6 +281,11 @@ class LogcatActivity : Hilt_LogcatActivity() {
                 }
                 true
             }
+            R.id.share_button -> {
+                shareLogs = true
+                showIncludeDeviceInfoDialog()
+                true
+            }
             R.id.log_level -> {
                 showLogLevelDialog()
                 true
@@ -299,18 +326,9 @@ class LogcatActivity : Hilt_LogcatActivity() {
                 logcatViewModel.includeDeviceInfo = which == 0 && checked
             }
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                documentContract.launch(getFormattedFileName())
+                logcatViewModel.saveLogAsZip()
                 dialog.dismiss()
             }
             .show()
-    }
-
-    companion object {
-        private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss")
-        private const val FILE_PREFIX = "Log-"
-        private const val FILE_SUFFIX = ".zip"
-        private fun getFormattedFileName(): String {
-            return "$FILE_PREFIX${LocalDateTime.now().format(dateTimeFormatter)}$FILE_SUFFIX"
-        }
     }
 }

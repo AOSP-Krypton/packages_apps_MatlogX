@@ -41,16 +41,6 @@ data class LogInfo(
      */
     fun hasOnlyMessage() = level.isWhitespace()
 
-    /**
-     * Flattens this object to a raw string, just like
-     * the one this object was mapped from.
-     *
-     * @return the flattened raw string.
-     */
-    fun toRaw(): String {
-        return "$timestamp $level/$tag($pid): $message"
-    }
-
     companion object {
         private val timestampRegex =
             Regex("^[0-9]{2}-[0-9]{2}\\s[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}")
