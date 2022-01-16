@@ -19,22 +19,20 @@ package com.krypton.matlogx.ui
 import android.os.Bundle
 import android.text.InputType
 
+import androidx.fragment.app.activityViewModels
 import androidx.preference.EditTextPreference
 import androidx.preference.MultiSelectListPreference
 import androidx.preference.PreferenceFragmentCompat
 
 import com.krypton.matlogx.R
-import com.krypton.matlogx.util.SettingsHelper
+import com.krypton.matlogx.viewmodel.SettingsViewModel
 
 import dagger.hilt.android.AndroidEntryPoint
 
-import javax.inject.Inject
+@AndroidEntryPoint
+class SettingsFragment : PreferenceFragmentCompat() {
 
-@AndroidEntryPoint(PreferenceFragmentCompat::class)
-class SettingsFragment : Hilt_SettingsFragment() {
-
-    @Inject
-    lateinit var settingsHelper: SettingsHelper
+    private val settingsViewModel: SettingsViewModel by activityViewModels()
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.fragment_settings, rootKey)
@@ -43,35 +41,40 @@ class SettingsFragment : Hilt_SettingsFragment() {
     }
 
     private fun setupBufferPreference() {
-        findPreference<MultiSelectListPreference>(BUFFER_KEY)?.also {
-            val buffers = settingsHelper.getLogcatBuffers()
-            it.summary = buffers.joinToString(", ")
-            it.values = buffers
-            it.setOnPreferenceChangeListener { _, newValue ->
+        val preference = findPreference<MultiSelectListPreference>(BUFFER_KEY)?.also {
+            it.setOnPreferenceChangeListener { preference, newValue ->
                 @Suppress("UNCHECKED_CAST")
-                val newBuffers = newValue as Set<String>
-                settingsHelper.setLogcatBuffers(newBuffers)
-                it.summary = newBuffers.joinToString(", ")
+                val newBuffers = (newValue as Set<String>).joinToString(",")
+                settingsViewModel.setLogcatBuffers(newBuffers)
+                preference.summary = newBuffers
                 true
+            }
+        }
+        settingsViewModel.logcatBuffers.observe(this) {
+            preference?.apply {
+                summary = it
+                values = it.split(",").toSet()
             }
         }
     }
 
     private fun setupDisplayLimitPreference() {
-        findPreference<EditTextPreference>(LOG_DISPLAY_LIMIT_KEY)?.also {
-            it.summary = getString(
-                R.string.log_display_limit_summary_placeholder,
-                settingsHelper.getLogSizeLimit()
-            )
+        val preference = findPreference<EditTextPreference>(LOG_DISPLAY_LIMIT_KEY)?.also {
             it.setOnBindEditTextListener { editText ->
                 editText.inputType = InputType.TYPE_CLASS_NUMBER
             }
             it.setOnPreferenceChangeListener { preference, newValue ->
                 if (newValue is String) {
-                    settingsHelper.setLogSizeLimit(newValue.toInt())
+                    settingsViewModel.setLogcatSizeLimit(newValue.toInt())
                     preference.summary = getString(R.string.log_display_limit_summary_placeholder, newValue.toInt())
                 }
                 true
+            }
+        }
+        settingsViewModel.logcatSizeLimit.observe(this) {
+            preference?.apply {
+                summary = getString(R.string.log_display_limit_summary_placeholder, it)
+                text = it.toString()
             }
         }
     }

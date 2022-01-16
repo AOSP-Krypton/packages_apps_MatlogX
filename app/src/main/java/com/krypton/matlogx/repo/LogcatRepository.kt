@@ -16,13 +16,15 @@
 
 package com.krypton.matlogx.repo
 
+import android.content.Context
 import android.net.Uri
 
 import com.krypton.matlogx.data.LogInfo
 import com.krypton.matlogx.data.Result
+import com.krypton.matlogx.data.settingsDataStore
 import com.krypton.matlogx.reader.LogcatReader
 import com.krypton.matlogx.util.FileUtil
-import com.krypton.matlogx.util.SettingsHelper
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 import java.io.File
 
@@ -31,104 +33,69 @@ import javax.inject.Singleton
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 @Singleton
 class LogcatRepository @Inject constructor(
-    private val settingsHelper: SettingsHelper,
+    @ApplicationContext context: Context,
     private val fileUtil: FileUtil,
 ) {
+
+    private val settingsDataStore = context.settingsDataStore
 
     /**
      * Get an asynchronous stream of [LogInfo].
      *
-     * @param query string to filter the logs with
+     * @param tags a list of string that will be used to print only
+     *             logs with those string as tags.
+     * @param query string to filter the logs with.
+     * @param logLevel the level of log below which logs should be omitted.
      * @return a flow of [LogInfo].
      */
-    fun getLogcatStream(query: String?): Flow<LogInfo> {
-        val args = mapOf<String, String?>(
-            LogcatReader.OPTION_BUFFER to settingsHelper.getLogcatBuffers().joinToString(",")
-        )
-        return LogcatReader.read(
-            args = args,
-            tags = null,
-            query = query,
-            logLevel = getLogLevel(),
-        )
+    suspend fun getLogcatStream(
+        tags: List<String>?,
+        query: String?,
+        logLevel: String,
+    ): Flow<LogInfo> {
+        return LogcatReader.read(getLogcatArgs(), tags, query, logLevel)
     }
 
     /**
      * Get an estimated size of current logcat stream.
      *
-     * @param query optional string to filter logs.
+     * @param tags a list of string that will be used to print only
+     *             logs with those string as tags.
+     * @param query string to filter the logs with.
+     * @param logLevel the level of log below which logs should be omitted.
      * @return the size of the stream.
      */
-    fun getLogcatSize(query: String?): Int {
-        val args = mapOf<String, String?>(
-            LogcatReader.OPTION_BUFFER to settingsHelper.getLogcatBuffers().joinToString(",")
-        )
-        return LogcatReader.getSize(
-            args = args,
-            tags = null,
-            query,
-            getLogLevel(),
-        )
-    }
-
-    /**
-     * Get the user selected limit for number of log lines to keep
-     * at a time to prevent OOM errors.
-     *
-     * @return number of lines to keep.
-     */
-    fun getLogcatSizeLimit(): Int = settingsHelper.getLogSizeLimit()
-
-    /**
-     * Get the user selected log level.
-     *
-     * @return the persisted log level.
-     */
-    fun getLogLevel(): String = settingsHelper.getLogLevel()
-
-    /**
-     * Set the log level to filter logs
-     *
-     * @param value the log level to persist
-     */
-    fun setLogLevel(value: String) {
-        settingsHelper.setLogLevel(value)
-    }
-
-    /**
-     * Registers a listener to get notified when settings change
-     * that require clients of [getLogcatStream] to re-start the coroutines.
-     *
-     * @param listener the callback that will be invoked when settings change.
-     */
-    fun registerConfigurationChangeListener(listener: () -> Unit) {
-        settingsHelper.registerConfigurationChangeListener(listener)
+    suspend fun getLogcatSize(
+        tags: List<String>?,
+        query: String?,
+        logLevel: String,
+    ): Int {
+        return LogcatReader.getSize(getLogcatArgs(), tags, query, logLevel)
     }
 
     /**
      * Saves given list of [LogInfo] as a zip file.
      *
-     * @param query optional string to filter logs.
+     * @param tags a list of string that will be used to print only
+     *             logs with those string as tags.
+     * @param query string to filter the logs with.
+     * @param logLevel the level of log below which logs should be omitted.
      * @param includeDeviceInfo whether to include device info inside the zip.
      * @return a result with the [File] (or an exception if failed) that was saved.
      */
     suspend fun saveLogAsZip(
+        tags: List<String>?,
         query: String?,
+        logLevel: String,
         includeDeviceInfo: Boolean,
     ): Result<Uri> {
-        val args = mapOf<String, String?>(
-            LogcatReader.OPTION_BUFFER to settingsHelper.getLogcatBuffers().joinToString(",")
-        )
-        val logs = LogcatReader.getRawLogs(
-            args = args,
-            tags = null,
-            query,
-            getLogLevel(),
-        )
+        val logs = LogcatReader.getRawLogs(getLogcatArgs(), tags, query, logLevel)
         val result = withContext(Dispatchers.IO) {
             fileUtil.saveZip(
                 logs,
@@ -138,21 +105,8 @@ class LogcatRepository @Inject constructor(
         return result
     }
 
-    /**
-     * Whether to include device information in logs.
-     *
-     * @return the saved value.
-     */
-    fun getIncludeDeviceInfo(): Boolean {
-        return settingsHelper.getIncludeDeviceInfo()
-    }
-
-    /**
-     * Save include device information preference.
-     *
-     * @param include the value to save.
-     */
-    fun setIncludeDeviceInfo(include: Boolean) {
-        settingsHelper.setIncludeDeviceInfo(include)
+    private suspend fun getLogcatArgs(): Map<String, String?> {
+        val buffers = settingsDataStore.data.map { it.logcatBuffers }.first()
+        return mapOf(LogcatReader.OPTION_BUFFER to buffers)
     }
 }

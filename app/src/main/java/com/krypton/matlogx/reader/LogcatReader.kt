@@ -65,7 +65,9 @@ object LogcatReader {
         return flow {
             getInputStream(args, tags, query, logLevel).bufferedReader().use {
                 while (true) {
-                    emit(LogInfo.fromLine(it.readLine()))
+                    it.readLine()?.let { line ->
+                        emit(LogInfo.fromLine(line))
+                    }
                 }
             }
         }.flowOn(Dispatchers.IO)

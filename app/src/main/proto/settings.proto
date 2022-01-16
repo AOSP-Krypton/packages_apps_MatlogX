@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-package com.krypton.matlogx
+syntax = "proto3";
 
-import android.app.Application
+option java_package = "com.krypton.matlogx.data";
+option java_multiple_files = true;
 
-import dagger.hilt.android.HiltAndroidApp
-
-@HiltAndroidApp
-class LogcatApp : Application()
+message Settings {
+  string logcat_buffers = 1;
+  int32 log_size_limit = 2;
+  string log_level = 3;
+  bool include_device_info = 4;
+}

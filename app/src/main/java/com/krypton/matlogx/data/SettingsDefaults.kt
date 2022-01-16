@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.krypton.matlogx
+package com.krypton.matlogx.data
 
-import android.app.Application
-
-import dagger.hilt.android.HiltAndroidApp
-
-@HiltAndroidApp
-class LogcatApp : Application()
+object SettingsDefaults {
+    const val LOG_SIZE_DEFAULT = 10000
+    const val LOG_LEVEL_DEFAULT = "V"
+    const val INCLUDE_DEVICE_INFO_DEFAULT = false
+    const val DEFAULT_BUFFERS = "main,system,crash"
+}

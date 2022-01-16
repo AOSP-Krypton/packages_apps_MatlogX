@@ -47,8 +47,8 @@ import com.krypton.matlogx.viewmodel.LogcatViewModel
 
 import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint(AppCompatActivity::class)
-class LogcatActivity : Hilt_LogcatActivity() {
+@AndroidEntryPoint
+class LogcatActivity : AppCompatActivity() {
 
     private val logcatViewModel: LogcatViewModel by viewModels()
     private lateinit var logcatListView: RecyclerView
@@ -100,10 +100,14 @@ class LogcatActivity : Hilt_LogcatActivity() {
 
     override fun onStart() {
         super.onStart()
-        val status = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_LOGS)
-        if (status == PackageManager.PERMISSION_DENIED) {
-            showPermissionHelperDialog()
-            return
+        if (!logcatViewModel.collectLogs) {
+            val status = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_LOGS)
+            if (status == PackageManager.PERMISSION_DENIED) {
+                showPermissionHelperDialog()
+                return
+            } else {
+                logcatViewModel.collectLogs = true
+            }
         }
         setupListView()
         logcatViewModel.logcatLiveData.observe(this) {
@@ -305,8 +309,8 @@ class LogcatActivity : Hilt_LogcatActivity() {
         AlertDialog.Builder(this, R.style.Theme_MatLogX_AlertDialog)
             .setTitle(R.string.log_level)
             .setCancelable(true)
-            .setSingleChoiceItems(R.array.log_level, logcatViewModel.logLevel) { dialog, which ->
-                logcatViewModel.logLevel = which
+            .setSingleChoiceItems(R.array.log_level, logcatViewModel.getLogLevel()) { dialog, which ->
+                logcatViewModel.setLogLevel(which)
                 dialog.dismiss()
             }
             .setNegativeButton(android.R.string.cancel) { dialog, _ ->
@@ -323,7 +327,7 @@ class LogcatActivity : Hilt_LogcatActivity() {
                 R.array.save_zip_items,
                 booleanArrayOf(logcatViewModel.includeDeviceInfo)
             ) { _, which, checked ->
-                logcatViewModel.includeDeviceInfo = which == 0 && checked
+                logcatViewModel.setIncludeDeviceInfo(which == 0 && checked)
             }
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
                 logcatViewModel.saveLogAsZip()
