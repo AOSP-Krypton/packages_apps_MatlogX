@@ -23,4 +23,8 @@
         <item name="android:textColor">@android:color/white</item>
         <item name="android:statusBarColor">?android:attr/colorAccent</item>
     </style>
+
+    <style name="Theme.MatLogX.AlertDialog" parent="@style/Theme.AppCompat.DayNight.Dialog.Alert">
+        <item name="colorAccent">@color/accent_dark</item>
+    </style>
 </resources>

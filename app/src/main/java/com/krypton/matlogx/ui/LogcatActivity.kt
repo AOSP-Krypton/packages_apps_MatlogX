@@ -275,7 +275,7 @@ class LogcatActivity : Hilt_LogcatActivity() {
         }
 
     private fun showLogLevelDialog() {
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.Theme_MatLogX_AlertDialog)
             .setTitle(R.string.log_level)
             .setCancelable(true)
             .setSingleChoiceItems(R.array.log_level, logcatViewModel.logLevel) { dialog, which ->
@@ -289,7 +289,7 @@ class LogcatActivity : Hilt_LogcatActivity() {
     }
 
     private fun showIncludeDeviceInfoDialog() {
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.Theme_MatLogX_AlertDialog)
             .setTitle(R.string.save_zip)
             .setCancelable(true)
             .setMultiChoiceItems(
