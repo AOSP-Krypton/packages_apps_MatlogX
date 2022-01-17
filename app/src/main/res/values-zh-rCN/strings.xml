@@ -21,7 +21,7 @@
     <string name="how_to_grant">
         应用需要 READ_LOGS 权限才能读取系统 logcat.\n
         如要获取权限，输入以下 adb 命令 (无引号):\n
-        "adb shell pm grant com.krypton.logcat android.permission.READ_LOGS".
+        "adb shell pm grant com.krypton.matlogx android.permission.READ_LOGS".
     </string>
     <string name="pause">暂停</string>
     <string name="search">搜索</string>
