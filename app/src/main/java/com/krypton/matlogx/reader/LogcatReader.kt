@@ -121,7 +121,7 @@ object LogcatReader {
         val argsList = mutableListOf(
             LOGCAT_BIN,
             "*:$logLevel",
-            "--format=time,usec"
+            "--format=time"
         )
         appendArgs(args, argsList)
         appendTags(tags, argsList)

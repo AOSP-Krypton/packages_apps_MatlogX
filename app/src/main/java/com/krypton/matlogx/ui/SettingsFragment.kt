@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.text.InputType
 
 import androidx.fragment.app.activityViewModels
+import androidx.preference.CheckBoxPreference
 import androidx.preference.EditTextPreference
 import androidx.preference.MultiSelectListPreference
 import androidx.preference.PreferenceFragmentCompat
@@ -36,8 +37,21 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.fragment_settings, rootKey)
+        setupExpandLogsPreference()
         setupBufferPreference()
         setupDisplayLimitPreference()
+    }
+
+    private fun setupExpandLogsPreference() {
+        val preference = findPreference<CheckBoxPreference>(EXPAND_LOGS_KEY)?.also {
+            it.setOnPreferenceChangeListener { _, newValue ->
+                settingsViewModel.setExpandedByDefault(newValue as Boolean)
+                true
+            }
+        }
+        settingsViewModel.expandedByDefault.observe(this) {
+            preference?.isChecked = it
+        }
     }
 
     private fun setupBufferPreference() {
@@ -80,6 +94,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     companion object {
+        private const val EXPAND_LOGS_KEY = "expand_logs"
         private const val BUFFER_KEY = "buffer"
         private const val LOG_DISPLAY_LIMIT_KEY = "log_display_limit"
     }

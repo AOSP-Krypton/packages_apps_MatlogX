@@ -59,11 +59,12 @@ class LogcatActivity : AppCompatActivity() {
     private lateinit var toolbar: Toolbar
     private lateinit var topScrollButton: FloatingActionButton
     private lateinit var bottomScrollButton: FloatingActionButton
+    private lateinit var expandLogsMenuItem: MenuItem
 
     private var internalScroll = false
 
     // Internal flag that is set to true when share is clicked
-    // and is waiting for next update from viewmodel
+    // and is waiting for next update from view model
     private var shareLogs = false
 
     private var documentTreeLauncher =
@@ -119,8 +120,8 @@ class LogcatActivity : AppCompatActivity() {
             }
         }
         logcatViewModel.logSaveResult.observe(this) {
-            val result = it.getOrNull() ?: return@observe
-            if (result.isSuccess) {
+            val result = it.getOrNull()
+            if (result?.isSuccess == true) {
                 if (!shareLogs) {
                     Toast.makeText(this, R.string.log_saved_successfully, Toast.LENGTH_SHORT)
                         .show()
@@ -128,7 +129,7 @@ class LogcatActivity : AppCompatActivity() {
                     shareLogs = false
                     startShare(result.getOrThrow())
                 }
-            } else {
+            } else if (result?.isFailure == true) {
                 Toast.makeText(
                     this,
                     getString(R.string.failed_to_save_log, result.exceptionOrNull()),
@@ -231,6 +232,11 @@ class LogcatActivity : AppCompatActivity() {
             else
                 R.drawable.ic_baseline_pause_24
         )
+        expandLogsMenuItem = menu.findItem(R.id.expand_logs)
+        logcatViewModel.expandLogsLiveData.observe(this) {
+            expandLogsMenuItem.setTitle(if (it) R.string.minify_logs else R.string.expand_logs)
+            logcatListAdapter.notifyItemRangeChanged(0, logcatListAdapter.itemCount)
+        }
         val searchManager = getSystemService(SearchManager::class.java)
         searchView = (menu.findItem(R.id.search_button).actionView as SearchView).also {
             it.setSearchableInfo(
@@ -283,6 +289,10 @@ class LogcatActivity : AppCompatActivity() {
                     )
                     logcatListView.scrollToPosition(logcatListAdapter.itemCount - 1)
                 }
+                true
+            }
+            R.id.expand_logs -> {
+                logcatViewModel.toggleExpandedState()
                 true
             }
             R.id.share_button -> {

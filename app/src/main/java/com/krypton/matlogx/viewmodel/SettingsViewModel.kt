@@ -35,22 +35,24 @@ class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
-    private var _logcatBuffers = MutableLiveData<String>()
+    private val _logcatBuffers = MutableLiveData<String>()
     val logcatBuffers: LiveData<String> = _logcatBuffers
 
-    private var _logcatSizeLimit = MutableLiveData<Int>()
+    private val _logcatSizeLimit = MutableLiveData<Int>()
     val logcatSizeLimit: LiveData<Int> = _logcatSizeLimit
+
+    private val _expandedByDefault = MutableLiveData<Boolean>()
+    val expandedByDefault: LiveData<Boolean> = _expandedByDefault
 
     init {
         viewModelScope.launch {
-            settingsRepository.getLogcatBuffers().collectLatest {
-                _logcatBuffers.value = it
-            }
+            settingsRepository.getLogcatBuffers().collectLatest { _logcatBuffers.value = it }
         }
         viewModelScope.launch {
-            settingsRepository.getLogcatSizeLimit().collectLatest {
-                _logcatSizeLimit.value = it
-            }
+            settingsRepository.getLogcatSizeLimit().collectLatest { _logcatSizeLimit.value = it }
+        }
+        viewModelScope.launch {
+            settingsRepository.getExpandedByDefault().collectLatest { _expandedByDefault.value = it }
         }
     }
 
@@ -63,6 +65,12 @@ class SettingsViewModel @Inject constructor(
     fun setLogcatSizeLimit(limit: Int) {
         viewModelScope.launch {
             settingsRepository.setLogcatSizeLimit(limit)
+        }
+    }
+
+    fun setExpandedByDefault(expanded: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setExpandedByDefault(expanded)
         }
     }
 }

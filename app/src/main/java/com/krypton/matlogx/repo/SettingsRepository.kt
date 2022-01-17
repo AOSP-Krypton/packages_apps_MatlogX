@@ -123,4 +123,26 @@ class SettingsRepository @Inject constructor(
                 .build()
         }
     }
+
+    /**
+     * Whether to expand log message by default.
+     *
+     * @return the saved value as a [Flow].
+     */
+    fun getExpandedByDefault(): Flow<Boolean> = settingsDataStore.data.map {
+        it.expandedByDefault
+    }
+
+    /**
+     * Save whether to expand log message by default.
+     *
+     * @param expanded the value to save.
+     */
+    suspend fun setExpandedByDefault(expanded: Boolean) {
+        settingsDataStore.updateData {
+            it.toBuilder()
+                .setExpandedByDefault(expanded)
+                .build()
+        }
+    }
 }

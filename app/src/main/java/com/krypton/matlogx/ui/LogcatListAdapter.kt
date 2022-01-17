@@ -59,8 +59,12 @@ class LogcatListAdapter(context: Context) : RecyclerView.Adapter<LogcatListViewH
     )
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LogcatListViewHolder {
-        return LogcatListViewHolder(layoutInflater.inflate(R.layout.logcat_list_item,
-            parent, false))
+        return LogcatListViewHolder(
+            layoutInflater.inflate(
+                R.layout.logcat_list_item,
+                parent, false
+            )
+        )
     }
 
     override fun onBindViewHolder(holder: LogcatListViewHolder, position: Int) {
@@ -85,12 +89,12 @@ class LogcatListAdapter(context: Context) : RecyclerView.Adapter<LogcatListViewH
      * a new list of same size which is just left shifted, we
      * can skip diffing list and do things in a memory efficient way.
      *
-     * @param newList the new list to be submitted
+     * @param newList the new list to be submitted.
      */
     fun submitList(newList: List<LogcatListData>) {
-        // Incremental list
         when {
             newList.size == list.size -> {
+                if (newList.isEmpty()) return // If empty list is submitted more than once.
                 list = newList
                 notifyItemRemoved(0)
                 notifyItemInserted(newList.size)

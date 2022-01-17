@@ -32,16 +32,12 @@ import com.krypton.matlogx.repo.SettingsRepository
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 
-import java.util.LinkedList
-
 import javax.inject.Inject
 
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -51,11 +47,17 @@ class LogcatViewModel @Inject constructor(
 ) : ViewModel() {
     private val _logcatLiveData = MutableLiveData<List<LogcatListData>>()
     val logcatLiveData: LiveData<List<LogcatListData>> = _logcatLiveData
-    private val logList = LinkedList<LogcatListData>()
+    private val logList = mutableListOf<LogcatListData>()
     private var job: Job? = null
 
     // Whether livedata should be updated when new log info is collected from repository
     var logcatUpdatePaused = false
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataChanged()
+            }
+        }
 
     // Whether we should scroll to the bottom automatically
     // when new log info is added to the list.
@@ -72,7 +74,7 @@ class LogcatViewModel @Inject constructor(
         put("F", 5)
     }
 
-    private lateinit var logLevel: String
+    private var logLevel: String = "V"
     var includeDeviceInfo = false
         private set
     private var sizeLimit = 0
@@ -95,28 +97,52 @@ class LogcatViewModel @Inject constructor(
             }
         }
 
+    private var isExpanded = false
+    private val _expandLogsLiveData = MutableLiveData<Boolean>()
+    val expandLogsLiveData: LiveData<Boolean> = _expandLogsLiveData
+
+    private var currentIndex = 0
+    private var limit = 0
+
     init {
         viewModelScope.run {
             launch {
                 logLevel = settingsRepository.getLogLevel().first()
                 includeDeviceInfo = settingsRepository.getIncludeDeviceInfo().first()
                 sizeLimit = settingsRepository.getLogcatSizeLimit().first()
+                isExpanded = settingsRepository.getExpandedByDefault().first()
                 initDone = true
                 startJob()
             }
             launch {
                 settingsRepository.getLogLevel().collectLatest {
-                    logLevel = it
-                    restartLogcat()
+                    if (logLevel != it) {
+                        logLevel = it
+                        restartLogcat()
+                    }
                 }
             }
             launch {
                 settingsRepository.getIncludeDeviceInfo().collectLatest { includeDeviceInfo = it }
             }
             launch {
-                settingsRepository.getLogcatSizeLimit().collect {
-                    sizeLimit = it
-                    restartLogcat()
+                settingsRepository.getLogcatSizeLimit().collectLatest {
+                    if (sizeLimit != it) {
+                        sizeLimit = it
+                        restartLogcat()
+                    }
+                }
+            }
+            launch {
+                settingsRepository.getExpandedByDefault().collectLatest {
+                    if (isExpanded != it) {
+                        isExpanded = it
+                        logList.forEach { data ->
+                            data.isExpanded = isExpanded
+                        }
+                        notifyDataChanged()
+                        _expandLogsLiveData.value = isExpanded
+                    }
                 }
             }
         }
@@ -150,7 +176,9 @@ class LogcatViewModel @Inject constructor(
      * @param level the new log level.
      */
     fun setLogLevel(level: Int) {
-        logLevel = logLevelMap.keyAt(logLevelMap.indexOfValue(level))
+        val newLogLevel = logLevelMap.keyAt(logLevelMap.indexOfValue(level))
+        if (newLogLevel == logLevel) return
+        logLevel = newLogLevel
         viewModelScope.launch {
             settingsRepository.setLogLevel(logLevel)
             restartLogcat()
@@ -171,6 +199,7 @@ class LogcatViewModel @Inject constructor(
      * @param include the value of the setting.
      */
     fun setIncludeDeviceInfo(include: Boolean) {
+        if (includeDeviceInfo == include) return
         includeDeviceInfo = include
         viewModelScope.launch {
             settingsRepository.setIncludeDeviceInfo(includeDeviceInfo)
@@ -178,9 +207,13 @@ class LogcatViewModel @Inject constructor(
         }
     }
 
-    override fun onCleared() {
-        cancelJob()
-        super.onCleared()
+    /**
+     * Toggle whether to expand log message by default.
+     */
+    fun toggleExpandedState() {
+        viewModelScope.launch {
+            settingsRepository.setExpandedByDefault(!isExpanded)
+        }
     }
 
     private fun restartLogcat() {
@@ -190,38 +223,43 @@ class LogcatViewModel @Inject constructor(
     }
 
     private fun startJob() {
-        if (!collectLogs) return
+        if (!collectLogs || !initDone) return
         job = viewModelScope.launch {
-
-            // Start fresh on a new job
-            logList.clear()
-            _logcatLiveData.value = emptyList()
+            if (logList.isNotEmpty()) {
+                // Start fresh on a new job
+                logList.clear()
+                _logcatLiveData.value = emptyList()
+            }
 
             val size = logcatRepository.getLogcatSize(
                 null /* Tags isn't supported yet */,
                 cachedQuery,
                 logLevel
             )
-            val actualLimit = minOf(sizeLimit, size)
+            limit = minOf(sizeLimit, size)
             logcatRepository.getLogcatStream(
                 null /* Tags isn't supported yet */,
                 cachedQuery,
                 logLevel
-            ).map {
-                LogcatListData(it, false)
-            }.collectIndexed { index, logInfo ->
-                if (logList.size == actualLimit) {
+            ).collectIndexed { index, logInfo ->
+                currentIndex = index
+                if (logList.size == limit) {
                     logList.removeFirst()
                 }
-                logList.add(logInfo)
-                // This restriction is here so that the recycler view won't struggle
-                // when elements are pumped in one by one rapidly for the first time.
-                // Displaying a large set of logs first and then pushing the rest one by one
-                // is better.
-                if (!logcatUpdatePaused && ((index >= (actualLimit - 1)) || (cachedQuery?.isNotBlank() == true))) {
-                    _logcatLiveData.value = logList.toList()
-                }
+                val data = LogcatListData(logInfo, isExpanded)
+                logList.add(data)
+                notifyDataChanged()
             }
+        }
+    }
+
+    private fun notifyDataChanged() {
+        // This restriction is here so that the recycler view won't struggle
+        // when elements are pumped in one by one rapidly for the first time.
+        // Displaying a large set of logs first and then pushing the rest one by one
+        // is better.
+        if (!logcatUpdatePaused && ((currentIndex >= (limit - 1)) || (cachedQuery?.isNotBlank() == true))) {
+            _logcatLiveData.value = logList.toList()
         }
     }
 

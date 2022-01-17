@@ -20,14 +20,14 @@ package com.krypton.matlogx.data
  * Data class representing a line from logcat.
  *
  * @property pid process id of the program that logged this entry.
- * @property timestamp time (format MM-dd HH:MM:ss.SSS) at which this entry was logged.
+ * @property time time (format MM-dd HH:MM:ss) at which this entry was logged.
  * @property tag the log tag of this entry.
  * @property level the log level of this entry.
  * @property message the message that was logged.
  */
 data class LogInfo(
     val pid: Short = -1,
-    val timestamp: String = "",
+    val time: String = "",
     val tag: String = "",
     val level: Char = ' ',
     val message: String = "",
@@ -42,8 +42,7 @@ data class LogInfo(
     fun hasOnlyMessage() = level.isWhitespace()
 
     companion object {
-        private val timestampRegex =
-            Regex("^[0-9]{2}-[0-9]{2}\\s[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}")
+        private val timeRegex = Regex("^[0-9]{2}-[0-9]{2}\\s[0-9]{2}:[0-9]{2}:[0-9]{2}")
         private val pidRegex = Regex("\\(\\s*[0-9]+\\)")
 
         /**
@@ -58,18 +57,14 @@ data class LogInfo(
                 return LogInfo(message = logLine)
             }
             // Log format:
-            // DD-MM HH:MM:SS.ssssss D/TAG( PID): message
+            // DD-MM HH:MM:SS D/TAG( PID): message
             val metadata = logLine.substringBefore("/")
-            val pid = try {
-                pidRegex.find(logLine)?.value?.substringAfter("(")?.substringBefore(")")
-                    ?.trimStart()?.toShort()
-                    ?: -1
-            } catch (e: NumberFormatException) {
-                -1
-            }
+            val pid = pidRegex.find(logLine)?.value?.substringAfter("(")?.substringBefore(")")
+                ?.trimStart()?.toShortOrNull()
+                ?: -1
             return LogInfo(
                 pid = pid,
-                timestamp = timestampRegex.find(metadata)?.value ?: "",
+                time = timeRegex.find(metadata)?.value ?: "",
                 // Assuming that no one insane used ( in their tag
                 tag = logLine.substringAfter("/").substringBefore("("),
                 level = metadata.last(),

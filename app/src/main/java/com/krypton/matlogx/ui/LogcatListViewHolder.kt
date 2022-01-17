@@ -31,10 +31,9 @@ class LogcatListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val messageView: TextView = itemView.findViewById(R.id.message)
     val levelView: TextView = itemView.findViewById(R.id.level)
 
-    private lateinit var data: LogcatListData
+    private var data: LogcatListData? = null
 
     fun setData(data: LogcatListData) {
-        if (this::data.isInitialized && this.data == data) return
         this.data = data
         val logInfo = data.logInfo
         if (logInfo.hasOnlyMessage()) {
@@ -44,7 +43,7 @@ class LogcatListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             levelView.visibility = View.GONE
         } else {
             pidView.text = logInfo.pid.toString()
-            timestampView.text = logInfo.timestamp
+            timestampView.text = logInfo.time
             tagView.text = logInfo.tag
             tagView.visibility = View.VISIBLE
             levelView.text = logInfo.level.toString()
@@ -59,9 +58,12 @@ class LogcatListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     }
 
     private fun updateView() {
-        pidView.visibility = if (data.isExpanded && !data.logInfo.hasOnlyMessage()) View.VISIBLE else View.GONE
-        timestampView.visibility = if (data.isExpanded && !data.logInfo.hasOnlyMessage()) View.VISIBLE else View.GONE
-        tagView.isSingleLine = !data.isExpanded
-        messageView.isSingleLine = !data.isExpanded
+        data?.let {
+            val showPidAndTimestamp = it.isExpanded && !it.logInfo.hasOnlyMessage()
+            pidView.visibility = if (showPidAndTimestamp) View.VISIBLE else View.GONE
+            timestampView.visibility = if (showPidAndTimestamp) View.VISIBLE else View.GONE
+            tagView.isSingleLine = !it.isExpanded
+            messageView.isSingleLine = !it.isExpanded
+        }
     }
 }

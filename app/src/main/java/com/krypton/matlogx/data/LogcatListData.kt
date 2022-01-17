@@ -26,7 +26,7 @@ package com.krypton.matlogx.data
 data class LogcatListData(
     val logInfo: LogInfo,
     /**
-     * Whether pid and timestamp should be shown.
+     * Whether full log message including PID and timestamp should be shown.
      */
     var isExpanded: Boolean = false,
 )

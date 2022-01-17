@@ -17,6 +17,14 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:title="@string/settings">
 
+    <PreferenceCategory android:title="@string/appearance">
+
+        <CheckBoxPreference
+            android:key="expand_logs"
+            android:title="@string/expand_logs_by_default"
+            android:summary="@string/expand_logs_summary" />
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/configuration">
 
         <MultiSelectListPreference

@@ -24,4 +24,5 @@ message Settings {
   int32 log_size_limit = 2;
   string log_level = 3;
   bool include_device_info = 4;
+  bool expanded_by_default = 5;
 }
