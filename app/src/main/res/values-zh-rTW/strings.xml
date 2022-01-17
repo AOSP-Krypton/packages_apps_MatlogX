@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+     Copyright (C) 2021 AOSP-Krypton Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_name">MatlogX</string>
+    <string name="logcat_play_or_pause">Logcat 停止或執行</string>
+    <string name="grant_permissions">獲取許可權</string>
+    <string name="how_to_grant">
+        應用需要 READ_LOGS 許可權才能讀取系統 logcat.\n
+        如要獲取許可權，輸入以下 adb 命令 (無引號):\n
+        "adb shell pm grant com.krypton.logcat android.permission.READ_LOGS".
+    </string>
+    <string name="pause">暫停</string>
+    <string name="search">搜尋</string>
+    <string name="search_hint">搜尋日誌</string>
+    <string name="string_not_found_in_logs">在日誌中找不到該字串</string>
+    <string name="fast_scroll_to_bottom_button">快速滾動至底</string>
+    <string name="fast_scroll_to_top_button">快速滾動至頂</string>
+    <string name="log_level">日誌等級</string>
+    <string name="save_zip">儲存為 zip</string>
+    <string name="include_device_info">包括裝置資訊</string>
+    <string name="log_saved_successfully">日誌儲存成功</string>
+    <string name="failed_to_save_log">無法儲存日誌: <xliff:g id="error" example="IOException: Failed to write">%1$s</xliff:g></string>
+
+    <!-- Settings -->
+    <string name="settings">設定</string>
+    <string name="configuration">配置</string>
+    <string name="log_display_limit">日誌顯示行數</string>
+    <string name="log_display_limit_summary_placeholder">只顯示前 <xliff:g example="10000" id="limit">%1$d</xliff:g> 來避免記憶體溢位。</string>
+    <string name="log_buffers">日誌緩衝區</string>
+    <string name="share">分享</string>
+</resources>
