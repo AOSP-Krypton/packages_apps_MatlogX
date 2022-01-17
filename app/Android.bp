@@ -12,41 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-android_app {
+android_app_import {
     name: "MatlogX",
-    platform_apis: true,
     certificate: "platform",
     system_ext_specific: true,
     privileged: true,
-    srcs: [
-        "src/main/java/**/*.kt",
-    ],
-    resource_dirs: [
-        "src/main/res",
-    ],
     required: [
         "privapp_whitelist-matlogx",
     ],
-    static_libs: [
-        "androidx-constraintlayout_constraintlayout",
-        "androidx.appcompat_appcompat",
-        "androidx.activity_activity-ktx",
-        "androidx.documentfile_documentfile",
-        "androidx.lifecycle_lifecycle-viewmodel-ktx",
-        "androidx.core_core",
-        "androidx.preference_preference-ktx",
-        "androidx.fragment_fragment-ktx",
-        "androidx.recyclerview_recyclerview",
-        "com.google.android.material_material",
-        "hilt_android",
-        "jsr330",
-        "kotlinx_coroutines",
-        "kotlinx_coroutines_android",
-    ],
-    manifest: "src/main/AndroidManifest.xml",
-    plugins: [
-        "dagger2-compiler",
-    ],
+    apk: "build/outputs/apk/release/app-release*.apk",
 }
 
 prebuilt_etc {
