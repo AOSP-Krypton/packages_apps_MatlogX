@@ -243,7 +243,7 @@ class LogcatViewModel @Inject constructor(
                 logLevel
             ).collectIndexed { index, logInfo ->
                 currentIndex = index
-                if (logList.size == limit) {
+                if (limit != 0 && logList.size == limit) {
                     logList.removeFirst()
                 }
                 val data = LogcatListData(logInfo, isExpanded)
