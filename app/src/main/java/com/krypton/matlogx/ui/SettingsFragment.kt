@@ -79,15 +79,21 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
             it.setOnPreferenceChangeListener { preference, newValue ->
                 if (newValue is String) {
-                    settingsViewModel.setLogcatSizeLimit(newValue.toInt())
-                    preference.summary = getString(R.string.log_display_limit_summary_placeholder, newValue.toInt())
+                    val limit = newValue.toInt()
+                    settingsViewModel.setLogcatSizeLimit(limit)
+                    preference.summary =
+                        if (limit == 0) getString(R.string.log_display_limit_summary_no_limit) else getString(
+                            R.string.log_display_limit_summary_placeholder,
+                            newValue.toInt()
+                        )
                 }
                 true
             }
         }
         settingsViewModel.logcatSizeLimit.observe(this) {
             preference?.apply {
-                summary = getString(R.string.log_display_limit_summary_placeholder, it)
+                summary = if (it == 0) getString(R.string.log_display_limit_summary_no_limit)
+                    else getString(R.string.log_display_limit_summary_placeholder, it)
                 text = it.toString()
             }
         }
