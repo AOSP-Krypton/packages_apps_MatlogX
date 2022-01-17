@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+     Copyright (C) 2021 AOSP-Krypton Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_name">MatlogX</string>
+    <string name="logcat_play_or_pause">Logcat 停止或运行</string>
+    <string name="grant_permissions">获取权限</string>
+    <string name="how_to_grant">
+        应用需要 READ_LOGS 权限才能读取系统 logcat.\n
+        如要获取权限，输入以下 adb 命令 (无引号):\n
+        "adb shell pm grant com.krypton.logcat android.permission.READ_LOGS".
+    </string>
+    <string name="pause">暂停</string>
+    <string name="search">搜索</string>
+    <string name="search_hint">搜索日志</string>
+    <string name="string_not_found_in_logs">在日志中找不到该字符串</string>
+    <string name="fast_scroll_to_bottom_button">快速滚动至底</string>
+    <string name="fast_scroll_to_top_button">快速滚动至顶</string>
+    <string name="log_level">日志等级</string>
+    <string name="save_zip">保存为 zip</string>
+    <string name="include_device_info">包括设备信息</string>
+    <string name="log_saved_successfully">日志保存成功</string>
+    <string name="failed_to_save_log">无法保存日志: <xliff:g id="error" example="IOException: Failed to write">%1$s</xliff:g></string>
+
+    <!-- Settings -->
+    <string name="settings">设置</string>
+    <string name="configuration">配置</string>
+    <string name="log_display_limit">日志显示行数</string>
+    <string name="log_display_limit_summary_placeholder">只显示前 <xliff:g example="10000" id="limit">%1$d</xliff:g> 来避免内存溢出。</string>
+    <string name="log_buffers">日志缓冲区</string>
+    <string name="share">分享</string>
+</resources>
