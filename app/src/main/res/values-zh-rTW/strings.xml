@@ -14,7 +14,10 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources xmlns:tools="http://schemas.android.com/tools"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2"
+    tools:ignore="MissingTranslation">
+
     <string name="app_name">MatlogX</string>
     <string name="logcat_play_or_pause">Logcat 停止或執行</string>
     <string name="grant_permissions">獲取許可權</string>
@@ -33,13 +36,19 @@
     <string name="save_zip">儲存為 zip</string>
     <string name="include_device_info">包括裝置資訊</string>
     <string name="log_saved_successfully">日誌儲存成功</string>
-    <string name="failed_to_save_log">無法儲存日誌: <xliff:g id="error" example="IOException: Failed to write">%1$s</xliff:g></string>
+    <string name="failed_to_save_log">無法儲存日誌: <xliff:g example="IOException: Failed to write" id="error">%1$s</xliff:g></string>
+    <string name="share">分享</string>
+    <string name="expand_logs">展開日誌</string>
+    <string name="minify_logs">縮回日誌</string>
+    <string name="appearance">外觀</string>
+    <string name="expand_logs_by_default">預設展開日誌</string>
+    <string name="expand_logs_summary">顯示完整的日誌資訊，包括 PID 和時間戳</string>
 
     <!-- Settings -->
     <string name="settings">設定</string>
     <string name="configuration">配置</string>
     <string name="log_display_limit">日誌顯示行數</string>
     <string name="log_display_limit_summary_placeholder">只顯示前 <xliff:g example="10000" id="limit">%1$d</xliff:g> 來避免記憶體溢位。</string>
+    <string name="log_display_limit_summary_no_limit">沒有設定限制。請注意，該應用程式最終會導致記憶體溢位。</string>
     <string name="log_buffers">日誌緩衝區</string>
-    <string name="share">分享</string>
 </resources>
