@@ -325,7 +325,7 @@ class LogcatActivity : AppCompatActivity() {
         }
 
     private fun showLogLevelDialog() {
-        AlertDialog.Builder(this, R.style.Theme_MatLogX_AlertDialog)
+        AlertDialog.Builder(this)
             .setTitle(R.string.log_level)
             .setCancelable(true)
             .setSingleChoiceItems(R.array.log_level, logcatViewModel.getLogLevel()) { dialog, which ->
@@ -339,7 +339,7 @@ class LogcatActivity : AppCompatActivity() {
     }
 
     private fun showIncludeDeviceInfoDialog() {
-        AlertDialog.Builder(this, R.style.Theme_MatLogX_AlertDialog)
+        AlertDialog.Builder(this)
             .setTitle(R.string.save_zip)
             .setCancelable(true)
             .setMultiChoiceItems(
