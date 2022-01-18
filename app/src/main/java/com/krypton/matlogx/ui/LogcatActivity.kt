@@ -303,6 +303,10 @@ class LogcatActivity : AppCompatActivity() {
                 }
                 true
             }
+            R.id.clear_logs -> {
+                logcatViewModel.clearLogs()
+                true
+            }
             R.id.expand_logs -> {
                 logcatViewModel.toggleExpandedState()
                 true

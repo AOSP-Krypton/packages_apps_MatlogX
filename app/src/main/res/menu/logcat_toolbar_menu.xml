@@ -26,6 +26,11 @@
         android:title="@string/pause"
         app:showAsAction="ifRoom" />
 
+    <item android:id="@+id/clear_logs"
+        android:title="@string/clear_logs"
+        android:icon="@drawable/ic_baseline_close_24"
+        app:showAsAction="ifRoom" />
+
     <item android:id="@+id/expand_logs"
         android:title="@string/expand_logs"
         app:showAsAction="ifRoom" />

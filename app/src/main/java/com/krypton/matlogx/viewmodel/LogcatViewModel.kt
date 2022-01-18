@@ -232,6 +232,17 @@ class LogcatViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Clear all cached logs.
+     */
+    fun clearLogs() {
+        if (logList.isNotEmpty()) {
+            // Start fresh on a new job
+            logList.clear()
+            _logcatLiveData.value = emptyList()
+        }
+    }
+
     private fun restartLogcat() {
         cancelJob()
         _logcatLiveData.value = emptyList()
