@@ -111,6 +111,8 @@ class LogcatViewModel @Inject constructor(
     private var currentIndex = 0
     private var limitIndex = 0
 
+    private var logcatBuffers: String = ""
+
     init {
         viewModelScope.launch {
             initSettings()
@@ -123,6 +125,7 @@ class LogcatViewModel @Inject constructor(
         observeLogSizeLimit()
         observeExpandedState()
         observeTextSize()
+        observeBuffers()
     }
 
     private suspend fun initSettings() {
@@ -131,6 +134,7 @@ class LogcatViewModel @Inject constructor(
         sizeLimit = settingsRepository.getLogcatSizeLimit().first()
         isExpanded = settingsRepository.getExpandedByDefault().first()
         textSize = settingsRepository.getTextSize().first()
+        logcatBuffers = settingsRepository.getLogcatBuffers().first()
         initDone = true
     }
 
@@ -181,6 +185,17 @@ class LogcatViewModel @Inject constructor(
                     }
                     notifyDataChanged()
                     _textSizeChangedLiveData.value = Event(true)
+                }
+            }
+        }
+    }
+
+    private fun observeBuffers() {
+        viewModelScope.launch {
+            settingsRepository.getLogcatBuffers().collectLatest {
+                if (logcatBuffers != it && initDone) {
+                    logcatBuffers = it
+                    restartLogcat()
                 }
             }
         }
