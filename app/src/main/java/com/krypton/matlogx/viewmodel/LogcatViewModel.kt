@@ -220,7 +220,6 @@ class LogcatViewModel @Inject constructor(
         includeDeviceInfo = include
         viewModelScope.launch {
             settingsRepository.setIncludeDeviceInfo(includeDeviceInfo)
-            restartLogcat()
         }
     }
 
