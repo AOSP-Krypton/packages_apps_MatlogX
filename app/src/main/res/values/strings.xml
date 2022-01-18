@@ -27,6 +27,7 @@
         "adb shell pm grant com.krypton.matlogx android.permission.READ_LOGS".
     </string>
     <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
     <string name="search">Search</string>
     <string name="search_hint">Search logs</string>
     <string name="string_not_found_in_logs">String not found in logs</string>
@@ -41,6 +42,7 @@
     <string name="expand_logs">Expand logs</string>
     <string name="minify_logs">Minify logs</string>
     <string name="save_logs">Save logs</string>
+    <string name="clear_logs">Clear logs</string>
 
     <!-- Settings -->
     <string name="settings">Settings</string>
@@ -56,5 +58,4 @@
     <string name="small">Small</string>
     <string name="medium">Medium</string>
     <string name="large">Large</string>
-    <string name="clear_logs">Clear logs</string>
 </resources>

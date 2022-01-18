@@ -87,19 +87,27 @@ class LogcatActivity : AppCompatActivity() {
         topScrollButton = findViewById<FloatingActionButton>(R.id.top_scroll_button).apply {
             setOnClickListener {
                 hide()
-                internalScroll = true
-                logcatListView.scrollToPosition(0)
+                scrollToTop()
             }
         }
         bottomScrollButton = findViewById<FloatingActionButton>(R.id.bottom_scroll_button).apply {
             setOnClickListener {
                 hide()
                 if (logcatListAdapter.itemCount > 0) {
-                    internalScroll = true
-                    logcatListView.scrollToPosition(logcatListAdapter.itemCount - 1)
+                    scrollToBottom()
                 }
             }
         }
+    }
+
+    private fun scrollToTop() {
+        internalScroll = true
+        logcatListView.scrollToPosition(0)
+    }
+
+    private fun scrollToBottom() {
+        internalScroll = true
+        logcatListView.scrollToPosition(logcatListAdapter.itemCount - 1)
     }
 
     override fun onStart() {
@@ -118,8 +126,7 @@ class LogcatActivity : AppCompatActivity() {
             loadingProgressBar.visibility = if (it.isEmpty()) View.VISIBLE else View.GONE
             logcatListAdapter.submitList(it)
             if (logcatListAdapter.itemCount > 0 && logcatViewModel.autoScroll) {
-                internalScroll = true
-                logcatListView.scrollToPosition(logcatListAdapter.itemCount - 1)
+                scrollToBottom()
             }
         }
         logcatViewModel.textSizeChangedLiveData.observe(this) {
@@ -288,18 +295,24 @@ class LogcatActivity : AppCompatActivity() {
             R.id.pause_button -> {
                 logcatViewModel.logcatUpdatePaused = !logcatViewModel.logcatUpdatePaused
                 if (logcatViewModel.logcatUpdatePaused) {
-                    item.icon = ResourcesCompat.getDrawable(
-                        resources,
-                        R.drawable.ic_baseline_play_arrow_24,
-                        null
-                    )
+                    item.apply {
+                        icon = ResourcesCompat.getDrawable(
+                            resources,
+                            R.drawable.ic_baseline_play_arrow_24,
+                            null
+                        )
+                        setTitle(R.string.resume)
+                    }
                 } else {
-                    item.icon = ResourcesCompat.getDrawable(
-                        resources,
-                        R.drawable.ic_baseline_pause_24,
-                        null
-                    )
-                    logcatListView.scrollToPosition(logcatListAdapter.itemCount - 1)
+                    item.apply {
+                        icon = ResourcesCompat.getDrawable(
+                            resources,
+                            R.drawable.ic_baseline_pause_24,
+                            null
+                        )
+                        setTitle(R.string.pause)
+                    }
+                    scrollToBottom()
                 }
                 true
             }
@@ -335,7 +348,10 @@ class LogcatActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle(R.string.log_level)
             .setCancelable(true)
-            .setSingleChoiceItems(R.array.log_level, logcatViewModel.getLogLevel()) { dialog, which ->
+            .setSingleChoiceItems(
+                R.array.log_level,
+                logcatViewModel.getLogLevel()
+            ) { dialog, which ->
                 logcatViewModel.setLogLevel(which)
                 dialog.dismiss()
             }
