@@ -40,9 +40,6 @@
     <string name="share">Share</string>
     <string name="expand_logs">Expand logs</string>
     <string name="minify_logs">Minify logs</string>
-    <string name="appearance">Appearance</string>
-    <string name="expand_logs_by_default">Expand logs by default</string>
-    <string name="expand_logs_summary">Show full log message including PID and timestamp</string>
 
     <!-- Settings -->
     <string name="settings">Settings</string>
@@ -51,4 +48,11 @@
     <string name="log_display_limit_summary_placeholder">Show only the last <xliff:g example="10000" id="limit">%1$d</xliff:g> logs to avoid going out of memory.</string>
     <string name="log_display_limit_summary_no_limit">No limit set. Beware that the app will run out of memory eventually.</string>
     <string name="log_buffers">Log buffers</string>
+    <string name="appearance">Appearance</string>
+    <string name="expand_logs_by_default">Expand logs by default</string>
+    <string name="expand_logs_summary">Show full log message including PID and timestamp</string>
+    <string name="text_size">Text size</string>
+    <string name="small">Small</string>
+    <string name="medium">Medium</string>
+    <string name="large">Large</string>
 </resources>

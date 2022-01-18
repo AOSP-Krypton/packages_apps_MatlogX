@@ -29,4 +29,8 @@ data class LogcatListData(
      * Whether full log message including PID and timestamp should be shown.
      */
     var isExpanded: Boolean = false,
+    /**
+     * Text size in sp.
+     */
+    var textSize: Int = 12,
 )

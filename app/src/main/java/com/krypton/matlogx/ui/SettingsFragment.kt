@@ -22,6 +22,7 @@ import android.text.InputType
 import androidx.fragment.app.activityViewModels
 import androidx.preference.CheckBoxPreference
 import androidx.preference.EditTextPreference
+import androidx.preference.ListPreference
 import androidx.preference.MultiSelectListPreference
 import androidx.preference.PreferenceFragmentCompat
 
@@ -37,9 +38,22 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.fragment_settings, rootKey)
+        setupTextSizePreference()
         setupExpandLogsPreference()
         setupBufferPreference()
         setupDisplayLimitPreference()
+    }
+
+    private fun setupTextSizePreference() {
+        val preference = findPreference<ListPreference>(TEXT_SIZE_KEY)?.also {
+            it.setOnPreferenceChangeListener { _, newValue ->
+                settingsViewModel.setTextSize((newValue as String).toInt())
+                true
+            }
+        }
+        settingsViewModel.textSize.observe(this) {
+            preference?.value = it.toString()
+        }
     }
 
     private fun setupExpandLogsPreference() {
@@ -93,13 +107,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
         settingsViewModel.logcatSizeLimit.observe(this) {
             preference?.apply {
                 summary = if (it == 0) getString(R.string.log_display_limit_summary_no_limit)
-                    else getString(R.string.log_display_limit_summary_placeholder, it)
+                else getString(R.string.log_display_limit_summary_placeholder, it)
                 text = it.toString()
             }
         }
     }
 
     companion object {
+        private const val TEXT_SIZE_KEY = "text_size"
         private const val EXPAND_LOGS_KEY = "expand_logs"
         private const val BUFFER_KEY = "buffer"
         private const val LOG_DISPLAY_LIMIT_KEY = "log_display_limit"

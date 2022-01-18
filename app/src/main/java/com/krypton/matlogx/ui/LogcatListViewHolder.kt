@@ -36,24 +36,40 @@ class LogcatListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     fun setData(data: LogcatListData) {
         this.data = data
         val logInfo = data.logInfo
+        val size = data.textSize.toFloat()
         if (logInfo.hasOnlyMessage()) {
             pidView.visibility = View.GONE
             timestampView.visibility = View.GONE
             tagView.visibility = View.GONE
             levelView.visibility = View.GONE
         } else {
-            pidView.text = logInfo.pid.toString()
-            timestampView.text = logInfo.time
-            tagView.text = logInfo.tag
-            tagView.visibility = View.VISIBLE
-            levelView.text = logInfo.level.toString()
-            levelView.visibility = View.VISIBLE
+            pidView.apply {
+                text = logInfo.pid.toString()
+                textSize = size
+            }
+            timestampView.apply {
+                text = logInfo.time
+                textSize = size
+            }
+            tagView.apply {
+                text = logInfo.tag
+                visibility = View.VISIBLE
+                textSize = size
+            }
+            levelView.apply {
+                text = logInfo.level.toString()
+                visibility = View.VISIBLE
+                textSize = size
+            }
             itemView.setOnClickListener {
                 data.isExpanded = !data.isExpanded
                 updateView()
             }
         }
-        messageView.text = logInfo.message
+        messageView.apply {
+            text = logInfo.message
+            textSize = size
+        }
         updateView()
     }
 

@@ -20,5 +20,7 @@ object SettingsDefaults {
     const val LOG_SIZE_DEFAULT = 10000
     const val LOG_LEVEL_DEFAULT = "V"
     const val INCLUDE_DEVICE_INFO_DEFAULT = false
-    const val DEFAULT_BUFFERS = "main,system,crash"
+    const val DEFAULT_BUFFERS = "main,system"
+    const val EXPANDED_DEFAULT = false
+    const val DEFAULT_TEXT_SIZE = 12
 }

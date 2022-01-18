@@ -30,10 +30,12 @@ import java.io.OutputStream
 
 object SettingsSerializer : Serializer<Settings> {
     override val defaultValue: Settings = Settings.newBuilder()
+        .setLogcatBuffers(SettingsDefaults.DEFAULT_BUFFERS)
+        .setLogSizeLimit(SettingsDefaults.LOG_SIZE_DEFAULT)
         .setLogLevel(SettingsDefaults.LOG_LEVEL_DEFAULT)
         .setIncludeDeviceInfo(SettingsDefaults.INCLUDE_DEVICE_INFO_DEFAULT)
-        .setLogSizeLimit(SettingsDefaults.LOG_SIZE_DEFAULT)
-        .setLogcatBuffers(SettingsDefaults.DEFAULT_BUFFERS)
+        .setExpandedByDefault(SettingsDefaults.EXPANDED_DEFAULT)
+        .setTextSize(SettingsDefaults.DEFAULT_TEXT_SIZE)
         .build()
 
     @Suppress("BlockingMethodInNonBlockingContext")

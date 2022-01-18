@@ -19,6 +19,13 @@
 
     <PreferenceCategory android:title="@string/appearance">
 
+        <ListPreference
+            android:key="text_size"
+            android:title="@string/text_size"
+            android:summary="%s"
+            android:entries="@array/text_size_entries"
+            android:entryValues="@array/text_size_values" />
+
         <CheckBoxPreference
             android:key="expand_logs"
             android:title="@string/expand_logs_by_default"

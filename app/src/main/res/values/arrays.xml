@@ -35,4 +35,16 @@
     <string-array name="save_zip_items">
         <item>@string/include_device_info</item>
     </string-array>
+
+    <string-array name="text_size_entries">
+        <item>@string/small</item>
+        <item>@string/medium</item>
+        <item>@string/large</item>
+    </string-array>
+
+    <string-array name="text_size_values">
+        <item>8</item>
+        <item>12</item>
+        <item>16</item>
+    </string-array>
 </resources>

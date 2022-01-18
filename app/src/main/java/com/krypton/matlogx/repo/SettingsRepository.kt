@@ -145,4 +145,26 @@ class SettingsRepository @Inject constructor(
                 .build()
         }
     }
+
+    /**
+     * Get the text size for logs.
+     *
+     * @return the saved value as a [Flow].
+     */
+    fun getTextSize(): Flow<Int> = settingsDataStore.data.map {
+        it.textSize
+    }
+
+    /**
+     * Save text size.
+     *
+     * @param textSize the value to save.
+     */
+    suspend fun setTextSize(textSize: Int) {
+        settingsDataStore.updateData {
+            it.toBuilder()
+                .setTextSize(textSize)
+                .build()
+        }
+    }
 }

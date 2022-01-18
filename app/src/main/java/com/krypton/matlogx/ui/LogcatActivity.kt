@@ -119,6 +119,9 @@ class LogcatActivity : AppCompatActivity() {
                 logcatListView.scrollToPosition(logcatListAdapter.itemCount - 1)
             }
         }
+        logcatViewModel.textSizeChangedLiveData.observe(this) {
+            if (it.getOrNull() == true) logcatListAdapter.updateAll()
+        }
         logcatViewModel.logSaveResult.observe(this) {
             val result = it.getOrNull()
             if (result?.isSuccess == true) {
@@ -241,7 +244,7 @@ class LogcatActivity : AppCompatActivity() {
                 expandLogsMenuItem.setTitle(R.string.expand_logs)
                 expandLogsMenuItem.setIcon(R.drawable.ic_baseline_arrow_down_24)
             }
-            logcatListAdapter.notifyItemRangeChanged(0, logcatListAdapter.itemCount)
+            logcatListAdapter.updateAll()
         }
         val searchManager = getSystemService(SearchManager::class.java)
         searchView = (menu.findItem(R.id.search_button).actionView as SearchView).also {

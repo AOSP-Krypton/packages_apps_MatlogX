@@ -101,6 +101,10 @@ class LogcatViewModel @Inject constructor(
     private val _expandLogsLiveData = MutableLiveData<Boolean>()
     val expandLogsLiveData: LiveData<Boolean> = _expandLogsLiveData
 
+    private var textSize = 0
+    private val _textSizeChangedLiveData = MutableLiveData<Event<Boolean>>()
+    val textSizeChangedLiveData: LiveData<Event<Boolean>> = _textSizeChangedLiveData
+
     private var currentIndex = 0
     private var limit = 0
 
@@ -111,6 +115,7 @@ class LogcatViewModel @Inject constructor(
                 includeDeviceInfo = settingsRepository.getIncludeDeviceInfo().first()
                 sizeLimit = settingsRepository.getLogcatSizeLimit().first()
                 isExpanded = settingsRepository.getExpandedByDefault().first()
+                textSize = settingsRepository.getTextSize().first()
                 initDone = true
                 startJob()
             }
@@ -142,6 +147,18 @@ class LogcatViewModel @Inject constructor(
                         }
                         notifyDataChanged()
                         _expandLogsLiveData.value = isExpanded
+                    }
+                }
+            }
+            launch {
+                settingsRepository.getTextSize().collectLatest {
+                    if (textSize != it) {
+                        textSize = it
+                        logList.forEach { data ->
+                            data.textSize = textSize
+                        }
+                        notifyDataChanged()
+                        _textSizeChangedLiveData.value = Event(true)
                     }
                 }
             }
@@ -246,7 +263,7 @@ class LogcatViewModel @Inject constructor(
                 if (limit != 0 && logList.size == limit) {
                     logList.removeFirst()
                 }
-                val data = LogcatListData(logInfo, isExpanded)
+                val data = LogcatListData(logInfo, isExpanded, textSize)
                 logList.add(data)
                 notifyDataChanged()
             }

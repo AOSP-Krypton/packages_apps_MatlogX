@@ -112,4 +112,11 @@ class LogcatListAdapter(context: Context) : RecyclerView.Adapter<LogcatListViewH
             }
         }
     }
+
+    /**
+     * Updates all elements in the list.
+     */
+    fun updateAll() {
+        notifyItemRangeChanged(0, itemCount)
+    }
 }
