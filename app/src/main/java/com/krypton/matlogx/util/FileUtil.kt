@@ -57,6 +57,8 @@ class FileUtil @Inject constructor(
     ): Result<Uri> {
         // Create a sub directory inside the directory we have access.
         val persistedUris = context.contentResolver.persistedUriPermissions
+        if (persistedUris.isEmpty())
+            return Result.failure(IllegalStateException("Access to a directory in internal storage has not been given."))
         val treeUriPerm = persistedUris.first()
         if (!treeUriPerm.isReadPermission || !treeUriPerm.isWritePermission)
             return Result.failure(IllegalStateException("Does not have r/w permission"))
