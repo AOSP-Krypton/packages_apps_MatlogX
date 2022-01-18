@@ -95,6 +95,7 @@ class LogcatActivity : AppCompatActivity() {
                 hide()
                 if (logcatListAdapter.itemCount > 0) {
                     scrollToBottom()
+                    logcatViewModel.autoScroll = true
                 }
             }
         }
@@ -122,8 +123,10 @@ class LogcatActivity : AppCompatActivity() {
             }
         }
         setupListView()
+        logcatViewModel.loadingProgressLiveData.observe(this) {
+            loadingProgressBar.visibility = if (it.getOrNull() == true) View.VISIBLE else View.GONE
+        }
         logcatViewModel.logcatLiveData.observe(this) {
-            loadingProgressBar.visibility = if (it.isEmpty()) View.VISIBLE else View.GONE
             logcatListAdapter.submitList(it)
             if (logcatListAdapter.itemCount > 0 && logcatViewModel.autoScroll) {
                 scrollToBottom()

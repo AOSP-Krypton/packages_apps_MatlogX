@@ -84,7 +84,7 @@ class LogcatListAdapter(context: Context) : RecyclerView.Adapter<LogcatListViewH
     override fun getItemCount(): Int = list.size
 
     /**
-     * Since this adapter is only meant to submit empty list /
+     * Since this adapter is only meant for submitting an empty list /
      * a new list that is just the old list + new elements /
      * a new list of same size which is just left shifted, we
      * can skip diffing list and do things in a memory efficient way.
@@ -95,9 +95,15 @@ class LogcatListAdapter(context: Context) : RecyclerView.Adapter<LogcatListViewH
         when {
             newList.size == list.size -> {
                 if (newList.isEmpty()) return // If empty list is submitted more than once.
-                list = newList
-                notifyItemRemoved(0)
-                notifyItemInserted(newList.size)
+                val shift = calculateShift(list, newList)
+                if (shift > 0) {
+                    list = newList
+                    notifyItemRangeRemoved(0, shift)
+                    notifyItemRangeInserted(list.lastIndex - shift + 1, shift)
+                } else if (shift < 0) {
+                    list = newList
+                    notifyItemRangeChanged(0, list.size)
+                }
             }
             newList.size > list.size -> {
                 val startIndex = list.size
@@ -118,5 +124,23 @@ class LogcatListAdapter(context: Context) : RecyclerView.Adapter<LogcatListViewH
      */
     fun updateAll() {
         notifyItemRangeChanged(0, itemCount)
+    }
+
+    companion object {
+        /**
+         * Calculates the amount of elements by which a new list is shifted
+         * to the parent list (assuming all the elements in the list are unique).
+         *
+         * @param list the parent list.
+         * @param newList the new list to check.
+         * @return negative integer if the new list is not a shifted lift, 0 or
+         *         a positive integer indicating the number of elements shifted.
+         */
+        private fun <T> calculateShift(list: List<T>, newList: List<T>): Int {
+            if (list.size == 1) return -1
+            val shiftIndex = newList.indexOf(list.last())
+            if (shiftIndex == -1) return -1
+            return list.lastIndex - shiftIndex
+        }
     }
 }

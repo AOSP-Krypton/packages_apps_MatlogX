@@ -47,6 +47,10 @@ class LogcatViewModel @Inject constructor(
 ) : ViewModel() {
     private val _logcatLiveData = MutableLiveData<List<LogcatListData>>()
     val logcatLiveData: LiveData<List<LogcatListData>> = _logcatLiveData
+
+    private val _loadingProgressLiveData = MutableLiveData<Event<Boolean>>(Event(true))
+    val loadingProgressLiveData: LiveData<Event<Boolean>> = _loadingProgressLiveData
+
     private val logList = mutableListOf<LogcatListData>()
     private var job: Job? = null
 
@@ -90,7 +94,6 @@ class LogcatViewModel @Inject constructor(
                 field = value
                 if (!value) {
                     cancelJob()
-                    _logcatLiveData.value = emptyList()
                 } else if (initDone) {
                     startJob()
                 }
@@ -106,7 +109,7 @@ class LogcatViewModel @Inject constructor(
     val textSizeChangedLiveData: LiveData<Event<Boolean>> = _textSizeChangedLiveData
 
     private var currentIndex = 0
-    private var limit = 0
+    private var limitIndex = 0
 
     init {
         viewModelScope.run {
@@ -121,7 +124,7 @@ class LogcatViewModel @Inject constructor(
             }
             launch {
                 settingsRepository.getLogLevel().collectLatest {
-                    if (logLevel != it) {
+                    if (logLevel != it && initDone) {
                         logLevel = it
                         restartLogcat()
                     }
@@ -132,7 +135,7 @@ class LogcatViewModel @Inject constructor(
             }
             launch {
                 settingsRepository.getLogcatSizeLimit().collectLatest {
-                    if (sizeLimit != it) {
+                    if (sizeLimit != it && initDone) {
                         sizeLimit = it
                         restartLogcat()
                     }
@@ -140,7 +143,7 @@ class LogcatViewModel @Inject constructor(
             }
             launch {
                 settingsRepository.getExpandedByDefault().collectLatest {
-                    if (isExpanded != it) {
+                    if (isExpanded != it && initDone) {
                         isExpanded = it
                         logList.forEach { data ->
                             data.isExpanded = isExpanded
@@ -152,7 +155,7 @@ class LogcatViewModel @Inject constructor(
             }
             launch {
                 settingsRepository.getTextSize().collectLatest {
-                    if (textSize != it) {
+                    if (textSize != it && initDone) {
                         textSize = it
                         logList.forEach { data ->
                             data.textSize = textSize
@@ -193,6 +196,7 @@ class LogcatViewModel @Inject constructor(
      * @param level the new log level.
      */
     fun setLogLevel(level: Int) {
+        if (!initDone) return
         val newLogLevel = logLevelMap.keyAt(logLevelMap.indexOfValue(level))
         if (newLogLevel == logLevel) return
         logLevel = newLogLevel
@@ -216,7 +220,7 @@ class LogcatViewModel @Inject constructor(
      * @param include the value of the setting.
      */
     fun setIncludeDeviceInfo(include: Boolean) {
-        if (includeDeviceInfo == include) return
+        if (!initDone || includeDeviceInfo == include) return
         includeDeviceInfo = include
         viewModelScope.launch {
             settingsRepository.setIncludeDeviceInfo(includeDeviceInfo)
@@ -245,36 +249,28 @@ class LogcatViewModel @Inject constructor(
 
     private fun restartLogcat() {
         cancelJob()
-        _logcatLiveData.value = emptyList()
         startJob()
     }
 
     private fun startJob() {
         if (!collectLogs || !initDone) return
         job = viewModelScope.launch {
-            if (logList.isNotEmpty()) {
-                // Start fresh on a new job
-                logList.clear()
-                _logcatLiveData.value = emptyList()
-            }
-
             val size = logcatRepository.getLogcatSize(
                 null /* Tags isn't supported yet */,
                 cachedQuery,
                 logLevel
             )
-            limit = minOf(sizeLimit, size)
+            limitIndex = minOf(sizeLimit, size) - 1
             logcatRepository.getLogcatStream(
                 null /* Tags isn't supported yet */,
                 cachedQuery,
                 logLevel
             ).collectIndexed { index, logInfo ->
                 currentIndex = index
-                if (limit != 0 && logList.size == limit) {
+                if (limitIndex >= 0 && logList.size == limitIndex) {
                     logList.removeFirst()
                 }
-                val data = LogcatListData(logInfo, isExpanded, textSize)
-                logList.add(data)
+                logList.add(LogcatListData(logInfo, isExpanded, textSize))
                 notifyDataChanged()
             }
         }
@@ -285,7 +281,11 @@ class LogcatViewModel @Inject constructor(
         // when elements are pumped in one by one rapidly for the first time.
         // Displaying a large set of logs first and then pushing the rest one by one
         // is better.
-        if (!logcatUpdatePaused && ((currentIndex >= (limit - 1)) || (cachedQuery?.isNotBlank() == true))) {
+        if (!logcatUpdatePaused && ((currentIndex >= limitIndex) ||
+                    (cachedQuery?.isNotBlank() == true))
+        ) {
+            if (_loadingProgressLiveData.value?.peek() == true) _loadingProgressLiveData.value =
+                Event(false)
             _logcatLiveData.value = logList.toList()
         }
     }
@@ -294,6 +294,12 @@ class LogcatViewModel @Inject constructor(
         if (job != null) {
             job?.cancel()
             job = null
+        }
+        currentIndex = 0
+        if (logList.isNotEmpty()) {
+            logList.clear()
+            _logcatLiveData.value = emptyList()
+            _loadingProgressLiveData.value = Event(true)
         }
     }
 }
