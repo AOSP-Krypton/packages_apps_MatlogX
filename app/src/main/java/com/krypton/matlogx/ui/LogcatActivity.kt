@@ -69,7 +69,10 @@ class LogcatActivity : AppCompatActivity() {
 
     private var documentTreeLauncher =
         registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) {
-            if (it == null) return@registerForActivityResult
+            if (it == null) {
+                finish()
+                return@registerForActivityResult
+            }
             val flags =
                 Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             contentResolver.takePersistableUriPermission(it, flags)
