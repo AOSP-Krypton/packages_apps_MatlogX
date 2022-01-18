@@ -15,22 +15,22 @@
      limitations under the License.
 -->
 <resources>
-    <array name="buffers">
+    <string-array name="buffers">
         <item>main</item>
         <item>system</item>
         <item>radio</item>
         <item>events</item>
         <item>crash</item>
-    </array>
+    </string-array>
 
-    <array name="log_level">
+    <string-array name="log_level">
         <item>Verbose (Default)</item>
         <item>Debug</item>
         <item>Info</item>
         <item>Warn</item>
         <item>Error</item>
         <item>Fatal</item>
-    </array>
+    </string-array>
 
     <string-array name="save_zip_items">
         <item>@string/include_device_info</item>
