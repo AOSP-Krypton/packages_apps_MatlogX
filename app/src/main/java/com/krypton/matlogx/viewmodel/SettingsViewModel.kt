@@ -48,19 +48,17 @@ class SettingsViewModel @Inject constructor(
     val textSize: LiveData<Int> = _textSize
 
     init {
-        viewModelScope.run {
-            launch {
-                settingsRepository.getLogcatBuffers().collectLatest { _logcatBuffers.value = it }
-            }
-            launch {
-                settingsRepository.getLogcatSizeLimit().collectLatest { _logcatSizeLimit.value = it }
-            }
-            launch {
-                settingsRepository.getExpandedByDefault().collectLatest { _expandedByDefault.value = it }
-            }
-            launch {
-                settingsRepository.getTextSize().collectLatest { _textSize.value = it }
-            }
+        viewModelScope.launch {
+            settingsRepository.getLogcatBuffers().collectLatest { _logcatBuffers.value = it }
+        }
+        viewModelScope.launch {
+            settingsRepository.getLogcatSizeLimit().collectLatest { _logcatSizeLimit.value = it }
+        }
+        viewModelScope.launch {
+            settingsRepository.getExpandedByDefault().collectLatest { _expandedByDefault.value = it }
+        }
+        viewModelScope.launch {
+            settingsRepository.getTextSize().collectLatest { _textSize.value = it }
         }
     }
 

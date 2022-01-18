@@ -112,57 +112,75 @@ class LogcatViewModel @Inject constructor(
     private var limitIndex = 0
 
     init {
-        viewModelScope.run {
-            launch {
-                logLevel = settingsRepository.getLogLevel().first()
-                includeDeviceInfo = settingsRepository.getIncludeDeviceInfo().first()
-                sizeLimit = settingsRepository.getLogcatSizeLimit().first()
-                isExpanded = settingsRepository.getExpandedByDefault().first()
-                textSize = settingsRepository.getTextSize().first()
-                initDone = true
-                startJob()
-            }
-            launch {
-                settingsRepository.getLogLevel().collectLatest {
-                    if (logLevel != it && initDone) {
-                        logLevel = it
-                        restartLogcat()
-                    }
+        viewModelScope.launch {
+            initSettings()
+            startJob()
+        }
+        observeLogLevel()
+        viewModelScope.launch {
+            settingsRepository.getIncludeDeviceInfo().collectLatest { includeDeviceInfo = it }
+        }
+        observeLogSizeLimit()
+        observeExpandedState()
+        observeTextSize()
+    }
+
+    private suspend fun initSettings() {
+        logLevel = settingsRepository.getLogLevel().first()
+        includeDeviceInfo = settingsRepository.getIncludeDeviceInfo().first()
+        sizeLimit = settingsRepository.getLogcatSizeLimit().first()
+        isExpanded = settingsRepository.getExpandedByDefault().first()
+        textSize = settingsRepository.getTextSize().first()
+        initDone = true
+    }
+
+    private fun observeLogLevel() {
+        viewModelScope.launch {
+            settingsRepository.getLogLevel().collectLatest {
+                if (logLevel != it && initDone) {
+                    logLevel = it
+                    restartLogcat()
                 }
             }
-            launch {
-                settingsRepository.getIncludeDeviceInfo().collectLatest { includeDeviceInfo = it }
-            }
-            launch {
-                settingsRepository.getLogcatSizeLimit().collectLatest {
-                    if (sizeLimit != it && initDone) {
-                        sizeLimit = it
-                        restartLogcat()
-                    }
+        }
+    }
+
+    private fun observeLogSizeLimit() {
+        viewModelScope.launch {
+            settingsRepository.getLogcatSizeLimit().collectLatest {
+                if (sizeLimit != it && initDone) {
+                    sizeLimit = it
+                    restartLogcat()
                 }
             }
-            launch {
-                settingsRepository.getExpandedByDefault().collectLatest {
-                    if (isExpanded != it && initDone) {
-                        isExpanded = it
-                        logList.forEach { data ->
-                            data.isExpanded = isExpanded
-                        }
-                        notifyDataChanged()
-                        _expandLogsLiveData.value = isExpanded
+        }
+    }
+
+    private fun observeExpandedState() {
+        viewModelScope.launch {
+            settingsRepository.getExpandedByDefault().collectLatest {
+                if (isExpanded != it && initDone) {
+                    isExpanded = it
+                    logList.forEach { data ->
+                        data.isExpanded = isExpanded
                     }
+                    notifyDataChanged()
+                    _expandLogsLiveData.value = isExpanded
                 }
             }
-            launch {
-                settingsRepository.getTextSize().collectLatest {
-                    if (textSize != it && initDone) {
-                        textSize = it
-                        logList.forEach { data ->
-                            data.textSize = textSize
-                        }
-                        notifyDataChanged()
-                        _textSizeChangedLiveData.value = Event(true)
+        }
+    }
+
+    private fun observeTextSize() {
+        viewModelScope.launch {
+            settingsRepository.getTextSize().collectLatest {
+                if (textSize != it && initDone) {
+                    textSize = it
+                    logList.forEach { data ->
+                        data.textSize = textSize
                     }
+                    notifyDataChanged()
+                    _textSizeChangedLiveData.value = Event(true)
                 }
             }
         }
