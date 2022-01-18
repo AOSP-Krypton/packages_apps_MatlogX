@@ -93,7 +93,7 @@ class LogTileService : TileService() {
         if (result.isSuccess) {
             toast(getString(R.string.log_saved_successfully))
         } else {
-            toast(getString(R.string.failed_to_save_log, result.exceptionOrNull()))
+            toast(getString(R.string.failed_to_save_log, result.exceptionOrNull()?.message))
         }
     }
 

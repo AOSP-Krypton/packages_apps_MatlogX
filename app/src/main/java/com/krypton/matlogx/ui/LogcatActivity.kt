@@ -145,7 +145,7 @@ class LogcatActivity : AppCompatActivity() {
             } else if (result?.isFailure == true) {
                 Toast.makeText(
                     this,
-                    getString(R.string.failed_to_save_log, result.exceptionOrNull()),
+                    getString(R.string.failed_to_save_log, result.exceptionOrNull()?.message),
                     Toast.LENGTH_SHORT
                 ).show()
             }
