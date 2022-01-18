@@ -93,24 +93,6 @@ object LogcatReader {
         }
     }
 
-    /**
-     * Get the current size of logcat stream.
-     *
-     * @param args command line arguments for logcat.
-     * @param tags a list of string tags to filter the logs.
-     * @param query string to filter the logs.
-     * * @param logLevel the log level below which the logs should be discarded.
-     * @return the current size of logs.
-     */
-    fun getSize(
-        args: Map<String, String?>? = null,
-        tags: List<String>? = null,
-        query: String?,
-        logLevel: String,
-    ): Int = getInputStream(args, tags, query, logLevel, dump = true).bufferedReader().use { br ->
-        br.lines().count().toInt()
-    }
-
     private fun getInputStream(
         args: Map<String, String?>? = null,
         tags: List<String>? = null,

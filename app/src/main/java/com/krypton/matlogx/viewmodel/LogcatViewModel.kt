@@ -35,9 +35,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collectIndexed
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -48,10 +46,10 @@ class LogcatViewModel @Inject constructor(
     private val _logcatLiveData = MutableLiveData<List<LogcatListData>>()
     val logcatLiveData: LiveData<List<LogcatListData>> = _logcatLiveData
 
-    private val _loadingProgressLiveData = MutableLiveData<Event<Boolean>>(Event(true))
+    private val _loadingProgressLiveData = MutableLiveData(Event(true))
     val loadingProgressLiveData: LiveData<Event<Boolean>> = _loadingProgressLiveData
 
-    private val logList = mutableListOf<LogcatListData>()
+    private var logList = mutableListOf<LogcatListData>()
     private var job: Job? = null
 
     // Whether livedata should be updated when new log info is collected from repository
@@ -107,9 +105,6 @@ class LogcatViewModel @Inject constructor(
     private var textSize = 0
     private val _textSizeChangedLiveData = MutableLiveData<Event<Boolean>>()
     val textSizeChangedLiveData: LiveData<Event<Boolean>> = _textSizeChangedLiveData
-
-    private var currentIndex = 0
-    private var limitIndex = 0
 
     private var logcatBuffers: String = ""
 
@@ -288,38 +283,35 @@ class LogcatViewModel @Inject constructor(
     private fun startJob() {
         if (!collectLogs || !initDone) return
         job = viewModelScope.launch {
-            val size = logcatRepository.getLogcatSize(
+            val logs = logcatRepository.getLogsAsList(
                 null /* Tags isn't supported yet */,
                 cachedQuery,
                 logLevel
             )
-            limitIndex = minOf(sizeLimit, size) - 1
+            val logSize = logs.size
+            logList = (if (sizeLimit < logSize) {
+                logs.subList(logSize - sizeLimit, logSize - 1)
+            } else {
+                logs
+            }).map { LogcatListData(it, isExpanded, textSize) }.toMutableList()
+            if (_loadingProgressLiveData.value?.peek() == true)
+                _loadingProgressLiveData.value = Event(false)
+            notifyDataChanged()
             logcatRepository.getLogcatStream(
                 null /* Tags isn't supported yet */,
                 cachedQuery,
                 logLevel
-            ).collectIndexed { index, logInfo ->
-                currentIndex = index
-                if (limitIndex >= 0 && logList.size == limitIndex) {
-                    logList.removeFirst()
-                }
-                logList.add(LogcatListData(logInfo, isExpanded, textSize))
+            ).drop(logSize).collect {
+                logList.add(LogcatListData(it, isExpanded, textSize))
+                if (logList.size > sizeLimit) logList.removeFirstOrNull()
                 notifyDataChanged()
             }
         }
     }
 
     private fun notifyDataChanged() {
-        // This restriction is here so that the recycler view won't struggle
-        // when elements are pumped in one by one rapidly for the first time.
-        // Displaying a large set of logs first and then pushing the rest one by one
-        // is better.
-        if (!logcatUpdatePaused && ((currentIndex >= limitIndex) ||
-                    (cachedQuery?.isNotBlank() == true))
-        ) {
-            if (_loadingProgressLiveData.value?.peek() == true) _loadingProgressLiveData.value =
-                Event(false)
-            _logcatLiveData.value = logList.toList()
+        if (!logcatUpdatePaused) {
+            _logcatLiveData.value = logList
         }
     }
 
@@ -328,11 +320,10 @@ class LogcatViewModel @Inject constructor(
             job?.cancel()
             job = null
         }
-        currentIndex = 0
         if (logList.isNotEmpty()) {
             logList.clear()
             _logcatLiveData.value = emptyList()
-            _loadingProgressLiveData.value = Event(true)
         }
+        _loadingProgressLiveData.value = Event(true)
     }
 }

@@ -63,21 +63,23 @@ class LogcatRepository @Inject constructor(
     }
 
     /**
-     * Get an estimated size of current logcat stream.
+     * Get current logs as a list.
      *
      * @param tags a list of string that will be used to print only
      *             logs with those string as tags.
      * @param query string to filter the logs with.
      * @param logLevel the level of log below which logs should be omitted.
-     * @return the size of the stream.
+     * @return the logs as a [List] of [LogInfo].
      */
-    suspend fun getLogcatSize(
+    suspend fun getLogsAsList(
         tags: List<String>?,
         query: String?,
         logLevel: String,
-    ): Int {
-        return LogcatReader.getSize(getLogcatArgs(), tags, query, logLevel)
-    }
+    ): List<LogInfo> =
+        LogcatReader.getRawLogs(getLogcatArgs(), tags, query, logLevel)
+            .split("\n")
+            .filter { it.isNotBlank() }
+            .map { LogInfo.fromLine(it) }
 
     /**
      * Saves given list of [LogInfo] as a zip file.
