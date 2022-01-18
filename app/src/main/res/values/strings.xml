@@ -40,6 +40,7 @@
     <string name="share">Share</string>
     <string name="expand_logs">Expand logs</string>
     <string name="minify_logs">Minify logs</string>
+    <string name="save_logs">Save logs</string>
 
     <!-- Settings -->
     <string name="settings">Settings</string>
