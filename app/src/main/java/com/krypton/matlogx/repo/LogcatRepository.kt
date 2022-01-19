@@ -76,10 +76,12 @@ class LogcatRepository @Inject constructor(
         query: String?,
         logLevel: String,
     ): List<LogInfo> =
-        LogcatReader.getRawLogs(getLogcatArgs(), tags, query, logLevel)
-            .split("\n")
-            .filter { it.isNotBlank() }
-            .map { LogInfo.fromLine(it) }
+        withContext(Dispatchers.IO) {
+            LogcatReader.getRawLogs(getLogcatArgs(), tags, query, logLevel)
+                .split("\n")
+                .filter { it.isNotBlank() }
+                .map { LogInfo.fromLine(it) }
+        }
 
     /**
      * Saves given list of [LogInfo] as a zip file.
@@ -96,16 +98,13 @@ class LogcatRepository @Inject constructor(
         query: String?,
         logLevel: String,
         includeDeviceInfo: Boolean,
-    ): Result<Uri> {
-        val logs = LogcatReader.getRawLogs(getLogcatArgs(), tags, query, logLevel)
-        val result = withContext(Dispatchers.IO) {
+    ): Result<Uri> =
+        withContext(Dispatchers.IO) {
             fileUtil.saveZip(
-                logs,
+                LogcatReader.getRawLogs(getLogcatArgs(), tags, query, logLevel),
                 includeDeviceInfo,
             )
         }
-        return result
-    }
 
     private suspend fun getLogcatArgs(): Map<String, String?> {
         val buffers = settingsDataStore.data.map { it.logcatBuffers }.first()

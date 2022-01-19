@@ -311,7 +311,7 @@ class LogcatViewModel @Inject constructor(
 
     private fun notifyDataChanged() {
         if (!logcatUpdatePaused) {
-            _logcatLiveData.value = logList
+            _logcatLiveData.value = logList.toList()
         }
     }
 
