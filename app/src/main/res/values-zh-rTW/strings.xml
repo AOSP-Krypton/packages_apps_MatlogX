@@ -27,6 +27,7 @@
         "adb shell pm grant com.krypton.matlogx android.permission.READ_LOGS".
     </string>
     <string name="pause">暫停</string>
+    <string name="resume">繼續</string>
     <string name="search">搜尋</string>
     <string name="search_hint">搜尋日誌</string>
     <string name="string_not_found_in_logs">在日誌中找不到該字串</string>
@@ -40,9 +41,8 @@
     <string name="share">分享</string>
     <string name="expand_logs">展開日誌</string>
     <string name="minify_logs">縮回日誌</string>
-    <string name="appearance">外觀</string>
-    <string name="expand_logs_by_default">預設展開日誌</string>
-    <string name="expand_logs_summary">顯示完整的日誌資訊，包括 PID 和時間戳</string>
+    <string name="save_logs">儲存日誌</string>
+    <string name="clear_logs">清空日誌</string>
 
     <!-- Settings -->
     <string name="settings">設定</string>
@@ -51,4 +51,11 @@
     <string name="log_display_limit_summary_placeholder">只顯示前 <xliff:g example="10000" id="limit">%1$d</xliff:g> 來避免記憶體溢位。</string>
     <string name="log_display_limit_summary_no_limit">沒有設定限制。請注意，該應用程式最終會導致記憶體溢位。</string>
     <string name="log_buffers">日誌緩衝區</string>
+    <string name="appearance">外觀</string>
+    <string name="expand_logs_by_default">預設展開日誌</string>
+    <string name="expand_logs_summary">顯示完整的日誌資訊，包括 PID 和時間戳</string>
+    <string name="text_size">文字大小</string>
+    <string name="small">小</string>
+    <string name="medium">中</string>
+    <string name="large">大</string>
 </resources>
