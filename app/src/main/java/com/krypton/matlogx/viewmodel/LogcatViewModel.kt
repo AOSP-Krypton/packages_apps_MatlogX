@@ -48,7 +48,7 @@ class LogcatViewModel @Inject constructor(
     private val _loadingProgressLiveData = MutableLiveData(Event(true))
     val loadingProgressLiveData: LiveData<Event<Boolean>> = _loadingProgressLiveData
 
-    private var logList = mutableListOf<LogcatListData>()
+    private val logList = mutableListOf<LogcatListData>()
     private var job: Job? = null
 
     // Whether livedata should be updated when new log info is collected from repository
@@ -288,11 +288,14 @@ class LogcatViewModel @Inject constructor(
                 logLevel
             )
             val logSize = logs.size
-            logList = (if (sizeLimit < logSize) {
-                logs.subList(logSize - sizeLimit, logSize - 1)
-            } else {
-                logs
-            }).map { LogcatListData(it, isExpanded, textSize) }.toMutableList()
+            logList.addAll(
+                if (sizeLimit < logSize) {
+                    logs.subList(logSize - sizeLimit, logSize - 1)
+                } else {
+                    logs
+                }.map {
+                    LogcatListData(it, isExpanded, textSize)
+                })
             if (_loadingProgressLiveData.value?.peek() == true)
                 _loadingProgressLiveData.value = Event(false)
             notifyDataChanged()
