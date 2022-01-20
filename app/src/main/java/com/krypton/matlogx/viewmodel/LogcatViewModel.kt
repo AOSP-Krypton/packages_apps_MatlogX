@@ -268,7 +268,6 @@ class LogcatViewModel @Inject constructor(
      */
     fun clearLogs() {
         if (logList.isNotEmpty()) {
-            // Start fresh on a new job
             logList.clear()
             _logcatLiveData.value = emptyList()
         }
@@ -322,10 +321,7 @@ class LogcatViewModel @Inject constructor(
             job?.cancel()
             job = null
         }
-        if (logList.isNotEmpty()) {
-            logList.clear()
-            _logcatLiveData.value = emptyList()
-        }
+        clearLogs()
         _loadingProgressLiveData.value = Event(true)
     }
 }
