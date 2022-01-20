@@ -20,10 +20,10 @@ import android.content.Context
 import android.net.Uri
 
 import com.krypton.matlogx.data.LogInfo
-import com.krypton.matlogx.data.Result
 import com.krypton.matlogx.data.settingsDataStore
 import com.krypton.matlogx.reader.LogcatReader
 import com.krypton.matlogx.util.FileUtil
+
 import dagger.hilt.android.qualifiers.ApplicationContext
 
 import java.io.File

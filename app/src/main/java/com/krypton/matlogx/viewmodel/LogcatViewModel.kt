@@ -26,7 +26,6 @@ import androidx.lifecycle.viewModelScope
 
 import com.krypton.matlogx.data.Event
 import com.krypton.matlogx.data.LogcatListData
-import com.krypton.matlogx.data.Result
 import com.krypton.matlogx.repo.LogcatRepository
 import com.krypton.matlogx.repo.SettingsRepository
 
