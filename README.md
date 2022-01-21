@@ -1,4 +1,4 @@
-![Icon](./app/src/main/res/mipmap-hdpi/ic_launcher.png)MatlogX
+MatlogX
 =========
 A graphical log reader for Android.
 
