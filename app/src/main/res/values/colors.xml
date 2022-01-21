@@ -15,7 +15,6 @@
      limitations under the License.
 -->
 <resources>
-    <color name="launcher_background">@android:color/white</color>
     <color name="accent_light">#FF0045BD</color>
     <color name="accent_dark">#FF448AFF</color>
 
