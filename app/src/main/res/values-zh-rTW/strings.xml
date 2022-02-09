@@ -48,7 +48,7 @@
     <string name="settings">設定</string>
     <string name="configuration">配置</string>
     <string name="log_display_limit">日誌顯示行數</string>
-    <string name="log_display_limit_summary_placeholder">只顯示前 <xliff:g example="10000" id="limit">%1$d</xliff:g> 來避免記憶體溢位。</string>
+    <string name="log_display_limit_summary_placeholder">只顯示前 <xliff:g example="10000" id="limit">%1$d</xliff:g> 行來避免記憶體溢位。</string>
     <string name="log_display_limit_summary_no_limit">沒有設定限制。請注意，該應用程式最終會導致記憶體溢位。</string>
     <string name="log_buffers">日誌緩衝區</string>
     <string name="appearance">外觀</string>
