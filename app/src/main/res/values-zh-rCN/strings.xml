@@ -48,7 +48,7 @@
     <string name="settings">设置</string>
     <string name="configuration">配置</string>
     <string name="log_display_limit">日志显示行数</string>
-    <string name="log_display_limit_summary_placeholder">只显示前 <xliff:g example="10000" id="limit">%1$d</xliff:g> 来避免内存溢出。</string>
+    <string name="log_display_limit_summary_placeholder">只显示前 <xliff:g example="10000" id="limit">%1$d</xliff:g> 行来避免内存溢出。</string>
     <string name="log_display_limit_summary_no_limit">没有设置限制。请注意，该应用程序最终会导致内存溢出。</string>
     <string name="log_buffers">日志缓冲区</string>
     <string name="appearance">外观</string>
