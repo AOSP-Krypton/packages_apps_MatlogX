@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+     Copyright (C) 2021 AOSP-Krypton Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2"
+    tools:ignore="MissingTranslation">
+
+    <string name="app_name">MatlogX</string>
+    <string name="logcat_play_or_pause">Кнопки старта и паузы записи Logcat</string>
+    <string name="grant_permissions">Предоставление разрешений</string>
+    <string name="how_to_grant">
+        Приложению требуется разрешение READ_LOGS для чтения системного logcat.\n
+	   Чтобы предоставить разрешение, откройте adb и введите следующую команду (без кавычек):\n
+        "adb shell pm grant com.krypton.matlogx android.permission.READ_LOGS".
+    </string>
+    <string name="pause">Пауза</string>
+    <string name="resume">Продолжить</string>
+    <string name="search">Поиск</string>
+    <string name="search_hint">Поиск логов</string>
+    <string name="string_not_found_in_logs">Строка не найдена в логах</string>
+    <string name="fast_scroll_to_bottom_button">Кнопка быстрой прокрутки вниз</string>
+    <string name="fast_scroll_to_top_button">Кнопка быстрой прокрутки вверх</string>
+    <string name="log_level">Уровень лога</string>
+    <string name="save_zip">Сохранить как zip</string>
+    <string name="include_device_info">Включить информацию об устройстве</string>
+    <string name="log_saved_successfully">Лог успешно сохранен</string>
+    <string name="failed_to_save_log">Не удалось сохранить лог: <xliff:g example="IOException: Failed to write" id="error">%1$s</xliff:g></string>
+    <string name="share">Поделиться</string>
+    <string name="expand_logs">Развернуть логи</string>
+    <string name="minify_logs">Минимизировать логи</string>
+    <string name="save_logs">Сохранить логи</string>
+    <string name="clear_logs">Очистить логи</string>
+
+    <!-- Settings -->
+    <string name="settings">Настройки</string>
+    <string name="configuration">Конфигурация</string>
+    <string name="log_display_limit">Ограничение отображения лога</string>
+    <string name="log_display_limit_summary_placeholder">Показать только последние <xliff:g example="10000" id="limit">%1$d</xliff:g> журналы, чтобы избежать нехватки памяти.</string>
+    <string name="log_display_limit_summary_no_limit">Не установлен лимит. Имейте ввиду, что со временем у приложения закончится память.</string>
+    <string name="log_buffers">Буферы логов</string>
+    <string name="appearance">Вид</string>
+    <string name="expand_logs_by_default">Развернуть логи по умолчанию</string>
+    <string name="expand_logs_summary">Показать полное сообщение лога, включая PID и отметку времени</string>
+    <string name="text_size">Размер текста</string>
+    <string name="small">Маленький</string>
+    <string name="medium">Средний</string>
+    <string name="large">Большой</string>
+</resources>
