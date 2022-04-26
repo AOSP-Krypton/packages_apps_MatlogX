@@ -54,8 +54,6 @@ object LogcatReader {
      * @param logLevel the log level below which the logs should be discarded.
      * @return a [Flow] of [LogInfo].
      */
-    // Ignore this, flow context is of IO Dispatcher and yet Android Studio is not able to sense it
-    @Suppress("BlockingMethodInNonBlockingContext")
     fun read(
         args: Map<String, String?>? = null,
         tags: List<String>? = null,
@@ -65,7 +63,9 @@ object LogcatReader {
         return flow {
             getInputStream(args, tags, query, logLevel).bufferedReader().use {
                 while (true) {
-                    it.readLine()?.let { line ->
+                    runCatching {
+                        it.readLine()
+                    }.getOrNull()?.let { line ->
                         emit(LogInfo.fromLine(line))
                     }
                 }
