@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 AOSP-Krypton Project
+ * Copyright (C) 2021-2022 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,9 @@ package com.krypton.matlogx.data
 
 import android.content.Context
 
-import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.Serializer
 import androidx.datastore.dataStore
-
-import com.google.protobuf.InvalidProtocolBufferException
 
 import java.io.InputStream
 import java.io.OutputStream
@@ -38,23 +35,23 @@ object SettingsSerializer : Serializer<Settings> {
         .setTextSize(SettingsDefaults.DEFAULT_TEXT_SIZE)
         .build()
 
-    @Suppress("BlockingMethodInNonBlockingContext")
     override suspend fun readFrom(input: InputStream): Settings {
-        try {
-            return Settings.parseFrom(input)
-        } catch (exception: InvalidProtocolBufferException) {
-            throw CorruptionException("Cannot read proto.", exception)
-        }
+        return runCatching {
+            Settings.parseFrom(input)
+        }.getOrThrow()
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
     override suspend fun writeTo(
         t: Settings,
         output: OutputStream
-    ) = t.writeTo(output)
+    ) {
+        runCatching {
+            t.writeTo(output)
+        }.getOrThrow()
+    }
 }
 
 val Context.settingsDataStore: DataStore<Settings> by dataStore(
-    fileName = "settings.proto",
+    fileName = "settings",
     serializer = SettingsSerializer
 )
