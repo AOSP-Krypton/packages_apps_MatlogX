@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-     Copyright (C) 2021 AOSP-Krypton Project
+     Copyright (C) 2021-2022 AOSP-Krypton Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -19,36 +19,44 @@
     tools:ignore="MissingTranslation">
 
     <string name="app_name">MatlogX</string>
-    <string name="logcat_play_or_pause">Logcat play or pause button</string>
     <string name="grant_permissions">Grant permissions</string>
     <string name="how_to_grant">
         App requires READ_LOGS permission to read system logcat.\n
         To grant the permission, open adb and enter the following command (without quotes):\n
-        "adb shell pm grant com.krypton.matlogx android.permission.READ_LOGS".
+        \"adb shell pm grant com.krypton.matlogx android.permission.READ_LOGS\"
     </string>
-    <string name="pause">Pause</string>
-    <string name="resume">Resume</string>
-    <string name="search">Search</string>
+    <string name="adb_command">ADB command</string>
+    <string name="command">adb shell pm grant com.krypton.matlogx android.permission.READ_LOGS</string>
+    <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="search_hint">Search logs</string>
-    <string name="string_not_found_in_logs">String not found in logs</string>
-    <string name="fast_scroll_to_bottom_button">Fast scroll to bottom button</string>
-    <string name="fast_scroll_to_top_button">Fast scroll to top button</string>
     <string name="log_level">Log level</string>
     <string name="save_zip">Save as zip</string>
     <string name="include_device_info">Include device information</string>
     <string name="log_saved_successfully">Log saved successfully</string>
-    <string name="failed_to_save_log">Failed to save log: <xliff:g example="IOException: Failed to write" id="error">%1$s</xliff:g></string>
-    <string name="share">Share</string>
-    <string name="expand_logs">Expand logs</string>
-    <string name="minify_logs">Minify logs</string>
+    <string name="failed_to_save_log">Failed to save log</string>
+    <string name="share_logs">Share logs</string>
     <string name="save_logs">Save logs</string>
     <string name="clear_logs">Clear logs</string>
+    <string name="search_button_content_desc">Search button in menu</string>
+    <string name="play_pause_button_content_desc">Play/Pause button</string>
+    <string name="menu_overflow_button">Menu overflow button</string>
+    <string name="clear_logs_button_content_desc">Clear logs button</string>
+    <string name="share_button_content_desc">Share button</string>
+    <string name="log_level_button_content_desc">Log level button</string>
+    <string name="save_zip_button_content_desc">Save zip button</string>
+    <string name="scroll_up_fab_content_desc">Floating action button to scroll up to the top</string>
+    <string name="scroll_down_fab_content_desc">Floating action button to scroll down to the bottom</string>
+    <string name="search_bar_close_icon_content_desc">Close button in search bar</string>
+    <string name="clear_recent_search_button_content_desc">Clear recent search query button</string>
+    <string name="clear">Clear</string>
 
     <!-- Settings -->
     <string name="settings">Settings</string>
     <string name="configuration">Configuration</string>
     <string name="log_display_limit">Log display limit</string>
-    <string name="log_display_limit_summary_placeholder">Show only the last <xliff:g example="10000" id="limit">%1$d</xliff:g> logs to avoid going out of memory.</string>
+    <string name="log_display_limit_summary_placeholder">
+        Show only the last <xliff:g example="10000" id="limit">%1$d</xliff:g> logs to avoid going out of memory.
+    </string>
     <string name="log_display_limit_summary_no_limit">No limit set. Beware that the app will run out of memory eventually.</string>
     <string name="log_buffers">Log buffers</string>
     <string name="appearance">Appearance</string>

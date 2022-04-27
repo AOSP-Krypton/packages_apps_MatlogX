@@ -23,8 +23,6 @@ import androidx.documentfile.provider.DocumentFile
 
 import dagger.hilt.android.qualifiers.ApplicationContext
 
-import java.io.IOException
-import java.lang.Exception
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -47,7 +45,7 @@ class ZipFileSaver @Inject constructor(
      * @param log the log content to save.
      * @param includeDeviceInfo whether to include device info.
      * @return a [Result] indicating whether the operation was successful or not,
-     *         type parameter represents the saved file.
+     *   data of [Result] is the uri of saved file.
      */
     fun saveZip(
         log: String,
@@ -61,9 +59,10 @@ class ZipFileSaver @Inject constructor(
         if (!treeUriPerm.isReadPermission || !treeUriPerm.isWritePermission)
             return Result.failure(IllegalStateException("Does not have r/w permission"))
         val treeFile = DocumentFile.fromTreeUri(context, treeUriPerm.uri)
-            ?: return Result.failure(Exception("Unable to open document tree"))
-        val subDir = treeFile.findFile(DIRECTORY_NAME) ?: treeFile.createDirectory(DIRECTORY_NAME)
-        ?: return Result.failure(Exception("Unable to create sub directory"))
+            ?: return Result.failure(Throwable("Unable to open document tree"))
+        val subDir = (treeFile.findFile(DIRECTORY_NAME)
+            ?: treeFile.createDirectory(DIRECTORY_NAME))
+            ?: return Result.failure(Throwable("Unable to create sub directory"))
 
         // Zip up all the contents
         val timestamp = getTimestamp()
@@ -74,7 +73,7 @@ class ZipFileSaver @Inject constructor(
                 DeviceInfo.toRawString().toByteArray(StandardCharsets.UTF_8)
         }
         val zipFile = subDir.createFile("application/zip", "$FILE_PREFIX-$timestamp")
-            ?: return Result.failure(Exception("Failed to create zip file"))
+            ?: return Result.failure(Throwable("Failed to create zip file"))
         return zip(contentsToZip, zipFile)
     }
 
@@ -83,14 +82,13 @@ class ZipFileSaver @Inject constructor(
      *
      * @param fileMap the files to zip.
      * @param zipFile the file name for the zip file.
-     * @return a [Result] indicating whether the write was success or not, including
-     *         the file or an exception.
+     * @return a [Result] indicating whether the write was successful or not.
      */
     private fun zip(fileMap: Map<String, ByteArray>, zipFile: DocumentFile): Result<Uri> {
         val uri = zipFile.uri
         val outputStream = context.contentResolver.openOutputStream(uri)
-            ?: return Result.failure(Exception("Unable to open OutputStream from zip file"))
-        return try {
+            ?: return Result.failure(Throwable("Unable to open OutputStream for zip file"))
+        val zipResult = runCatching {
             ZipOutputStream(outputStream).use {
                 fileMap.forEach { entry ->
                     it.putNextEntry(ZipEntry(entry.key))
@@ -99,9 +97,11 @@ class ZipFileSaver @Inject constructor(
                     it.closeEntry()
                 }
             }
+        }
+        return if (zipResult.isSuccess) {
             Result.success(uri)
-        } catch (e: IOException) {
-            Result.failure(e)
+        } else {
+            Result.failure(zipResult.exceptionOrNull() ?: Throwable("Failed to zip contents"))
         }
     }
 

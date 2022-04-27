@@ -41,6 +41,12 @@ data class LogInfo constructor(
      */
     fun hasOnlyMessage() = level == null
 
+    fun hasString(str: String?): Boolean {
+        return str?.isBlank() != false ||
+                message?.contains(str, true) == true ||
+                tag?.contains(str, true) == true
+    }
+
     companion object {
         private val timeRegex = Regex("^[0-9]{2}-[0-9]{2}\\s[0-9]{2}:[0-9]{2}:[0-9]{2}")
         private val pidRegex = Regex("\\(\\s*[0-9]+\\)")
@@ -61,14 +67,14 @@ data class LogInfo constructor(
             val metadata = logLine.substringBefore("/")
             val pid = pidRegex.find(logLine)?.value
                 ?.substringAfter("(")
-                ?.substringBefore("):")
+                ?.substringBefore(")")
                 ?.trim()
                 ?.toShortOrNull()
             return LogInfo(
                 pid = pid,
                 time = timeRegex.find(metadata)?.value,
                 // Assuming that no one insane used ( in their tag
-                tag = logLine.substringAfter("/").substringBefore("( $pid):"),
+                tag = logLine.substringAfter("/").substringBefore("("),
                 level = metadata.last(),
                 message = logLine.substringAfter("):").trim(),
             )

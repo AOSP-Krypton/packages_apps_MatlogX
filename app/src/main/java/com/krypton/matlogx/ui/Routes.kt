@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 AOSP-Krypton Project
+ * Copyright (C) 2022 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,9 @@
  * limitations under the License.
  */
 
-package com.krypton.matlogx.data
+package com.krypton.matlogx.ui
 
-/**
- * Wrapper class around [LogInfo] representing an item
- * in logcat list view.
- *
- * @property isExpanded whether full log message including PID and timestamp should be shown.
- * @property textSize text size in sp.
- */
-data class LogcatListData(
-    val logInfo: LogInfo,
-    val isExpanded: Boolean,
-    val textSize: Int
-)
+object Routes {
+    const val HOME = "home"
+    const val SETTINGS = "settings"
+}

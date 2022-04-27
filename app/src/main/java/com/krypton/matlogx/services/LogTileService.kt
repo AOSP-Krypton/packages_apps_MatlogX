@@ -19,8 +19,6 @@ package com.krypton.matlogx.services
 import android.service.quicksettings.TileService
 import android.widget.Toast
 
-import androidx.appcompat.app.AlertDialog
-
 import com.krypton.matlogx.R
 import com.krypton.matlogx.data.LogcatRepository
 import com.krypton.matlogx.data.settings.SettingsRepository
@@ -65,35 +63,18 @@ class LogTileService : TileService() {
     }
 
     private suspend fun showDialog() {
-        var includeDeviceInfo = settingsRepository.getIncludeDeviceInfo().first()
-        val dialog = AlertDialog.Builder(this, R.style.Theme_MatLogX_AlertDialog)
-            .setTitle(R.string.save_zip)
-            .setCancelable(true)
-            .setMultiChoiceItems(
-                R.array.save_zip_items,
-                booleanArrayOf(includeDeviceInfo)
-            ) { _, which, checked ->
-                includeDeviceInfo = which == 0 && checked
-            }
-            .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                serviceScope.launch { saveLog(includeDeviceInfo) }
-                dialog.dismiss()
-            }
-            .create()
-        showDialog(dialog)
-    }
-
-    private suspend fun saveLog(includeDeviceInfo: Boolean) {
+        val includeDeviceInfo = settingsRepository.getIncludeDeviceInfo().first()
         val result = logcatRepository.saveLogAsZip(
             null, /* tags aren't supported yet */
-            null,
             settingsRepository.getLogLevel().first(),
             includeDeviceInfo,
         )
         if (result.isSuccess) {
             toast(getString(R.string.log_saved_successfully))
         } else {
-            toast(getString(R.string.failed_to_save_log, result.exceptionOrNull()?.message))
+            toast(
+                result.exceptionOrNull()?.localizedMessage ?: getString(R.string.failed_to_save_log)
+            )
         }
     }
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-     Copyright (C) 2021 AOSP-Krypton Project
+     Copyright (C) 2021-2022 AOSP-Krypton Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -19,28 +19,18 @@
     tools:ignore="MissingTranslation">
 
     <string name="app_name">MatlogX</string>
-    <string name="logcat_play_or_pause">Кнопки старта и паузы записи Logcat</string>
     <string name="grant_permissions">Предоставление разрешений</string>
     <string name="how_to_grant">
         Приложению требуется разрешение READ_LOGS для чтения системного logcat.\n
 	   Чтобы предоставить разрешение, откройте adb и введите следующую команду (без кавычек):\n
         "adb shell pm grant com.krypton.matlogx android.permission.READ_LOGS".
     </string>
-    <string name="pause">Пауза</string>
-    <string name="resume">Продолжить</string>
-    <string name="search">Поиск</string>
     <string name="search_hint">Поиск логов</string>
-    <string name="string_not_found_in_logs">Строка не найдена в логах</string>
-    <string name="fast_scroll_to_bottom_button">Кнопка быстрой прокрутки вниз</string>
-    <string name="fast_scroll_to_top_button">Кнопка быстрой прокрутки вверх</string>
     <string name="log_level">Уровень лога</string>
     <string name="save_zip">Сохранить как zip</string>
     <string name="include_device_info">Включить информацию об устройстве</string>
     <string name="log_saved_successfully">Лог успешно сохранен</string>
-    <string name="failed_to_save_log">Не удалось сохранить лог: <xliff:g example="IOException: Failed to write" id="error">%1$s</xliff:g></string>
-    <string name="share">Поделиться</string>
-    <string name="expand_logs">Развернуть логи</string>
-    <string name="minify_logs">Минимизировать логи</string>
+    <string name="failed_to_save_log">Не удалось сохранить лог</string>
     <string name="save_logs">Сохранить логи</string>
     <string name="clear_logs">Очистить логи</string>
 

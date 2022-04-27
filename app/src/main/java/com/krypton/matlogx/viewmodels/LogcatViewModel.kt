@@ -16,15 +16,12 @@
 
 package com.krypton.matlogx.viewmodels
 
-import android.net.Uri
 import android.util.ArrayMap
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 
-import com.krypton.matlogx.data.Event
+import com.krypton.matlogx.data.AppRepository
 import com.krypton.matlogx.data.LogcatListData
 import com.krypton.matlogx.data.LogcatRepository
 import com.krypton.matlogx.data.settings.SettingsRepository
@@ -33,36 +30,28 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 
 import javax.inject.Inject
 
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 @HiltViewModel
 class LogcatViewModel @Inject constructor(
+    private val appRepository: AppRepository,
     private val logcatRepository: LogcatRepository,
     private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
-    private val _logcatLiveData = MutableLiveData<List<LogcatListData>>()
-    val logcatLiveData: LiveData<List<LogcatListData>> = _logcatLiveData
 
-    private val _loadingProgressLiveData = MutableLiveData(Event(true))
-    val loadingProgressLiveData: LiveData<Event<Boolean>> = _loadingProgressLiveData
+    private val _logcatList = MutableStateFlow(emptyList<LogcatListData>())
+    val logcatList: StateFlow<List<LogcatListData>>
+        get() = _logcatList
+
+    private val _loadingData = MutableStateFlow(true)
+    val loadingData: StateFlow<Boolean>
+        get() = _loadingData
 
     private val logList = mutableListOf<LogcatListData>()
     private var job: Job? = null
-
-    // Whether livedata should be updated when new log info is collected from repository
-    var logcatUpdatePaused = false
-        set(value) {
-            if (field != value) {
-                field = value
-                notifyDataChanged()
-            }
-        }
-
-    // Whether we should scroll to the bottom automatically
-    // when new log info is added to the list.
-    var autoScroll = true
 
     private var cachedQuery: String? = null
 
@@ -75,122 +64,88 @@ class LogcatViewModel @Inject constructor(
         put("F", 5)
     }
 
-    private var logLevel: String = "V"
-    var includeDeviceInfo = false
-        private set
-    private var sizeLimit = 0
-
-    private val _logSaveResult = MutableLiveData<Event<Result<Uri>>>()
-    val logSaveResult: LiveData<Event<Result<Uri>>> = _logSaveResult
-
-    private var initDone = false
-
-    var collectLogs = false
-        set(value) {
-            if (field != value) {
-                field = value
-                if (!value) {
-                    cancelJob()
-                } else if (initDone) {
-                    startJob()
-                }
-            }
-        }
-
     private var isExpanded = false
-    private val _expandLogsLiveData = MutableLiveData<Boolean>()
-    val expandLogsLiveData: LiveData<Boolean> = _expandLogsLiveData
-
     private var textSize = 0
-    private val _textSizeChangedLiveData = MutableLiveData<Event<Boolean>>()
-    val textSizeChangedLiveData: LiveData<Event<Boolean>> = _textSizeChangedLiveData
 
-    private var logcatBuffers: String = ""
+    private val listMutex = Mutex()
 
-    init {
+    val searchSuggestions: Flow<List<String>>
+        get() = appRepository.searchSuggestions
+
+    private val _logcatFlowSuspended = MutableStateFlow(false)
+    val logcatUiUpdatePaused: StateFlow<Boolean>
+        get() = _logcatFlowSuspended
+
+    val includeDeviceInfo: Flow<Boolean>
+        get() = settingsRepository.getIncludeDeviceInfo()
+
+    private val _logLevel: Flow<String>
+        get() = settingsRepository.getLogLevel()
+
+    val logLevel: Flow<Int>
+        get() = _logLevel.map { logLevelMap[it] ?: 0 }
+
+    fun init() {
         viewModelScope.launch {
-            initSettings()
+            isExpanded = settingsRepository.getExpandedByDefault().first()
+            textSize = settingsRepository.getTextSize().first()
+            observeExpandedState()
+            observeTextSize()
+            observeLogLevel()
+            observeLogSizeLimit()
+            observeBuffers()
             startJob()
-        }
-        observeLogLevel()
-        viewModelScope.launch {
-            settingsRepository.getIncludeDeviceInfo().collectLatest { includeDeviceInfo = it }
-        }
-        observeLogSizeLimit()
-        observeExpandedState()
-        observeTextSize()
-        observeBuffers()
-    }
-
-    private suspend fun initSettings() {
-        logLevel = settingsRepository.getLogLevel().first()
-        includeDeviceInfo = settingsRepository.getIncludeDeviceInfo().first()
-        sizeLimit = settingsRepository.getLogcatSizeLimit().first()
-        isExpanded = settingsRepository.getExpandedByDefault().first()
-        textSize = settingsRepository.getTextSize().first()
-        logcatBuffers = settingsRepository.getLogcatBuffers().first()
-        initDone = true
-    }
-
-    private fun observeLogLevel() {
-        viewModelScope.launch {
-            settingsRepository.getLogLevel().collectLatest {
-                if (logLevel != it && initDone) {
-                    logLevel = it
-                    restartLogcat()
-                }
-            }
-        }
-    }
-
-    private fun observeLogSizeLimit() {
-        viewModelScope.launch {
-            settingsRepository.getLogcatSizeLimit().collectLatest {
-                if (sizeLimit != it && initDone) {
-                    sizeLimit = it
-                    restartLogcat()
-                }
-            }
         }
     }
 
     private fun observeExpandedState() {
         viewModelScope.launch {
-            settingsRepository.getExpandedByDefault().collectLatest {
-                if (isExpanded != it && initDone) {
-                    isExpanded = it
-                    logList.forEach { data ->
-                        data.isExpanded = isExpanded
+            settingsRepository.getExpandedByDefault().filterNot { isExpanded == it }.collectLatest {
+                isExpanded = it
+                listMutex.withLock {
+                    logList.replaceAll { data ->
+                        data.copy(isExpanded = isExpanded)
                     }
-                    notifyDataChanged()
-                    _expandLogsLiveData.value = isExpanded
                 }
+                notifyDataChanged()
             }
         }
     }
 
     private fun observeTextSize() {
         viewModelScope.launch {
-            settingsRepository.getTextSize().collectLatest {
-                if (textSize != it && initDone) {
-                    textSize = it
-                    logList.forEach { data ->
-                        data.textSize = textSize
+            settingsRepository.getTextSize().filterNot { textSize == it }.collectLatest {
+                textSize = it
+                listMutex.withLock {
+                    logList.replaceAll { data ->
+                        data.copy(textSize = textSize)
                     }
-                    notifyDataChanged()
-                    _textSizeChangedLiveData.value = Event(true)
                 }
+                notifyDataChanged()
+            }
+        }
+    }
+
+    private fun observeLogLevel() {
+        viewModelScope.launch {
+            settingsRepository.getLogLevel().distinctUntilChanged().onEach {
+                restartLogcat()
+            }
+        }
+    }
+
+    private fun observeLogSizeLimit() {
+        viewModelScope.launch {
+            settingsRepository.getLogcatSizeLimit().distinctUntilChanged().onEach {
+                restartLogcat()
             }
         }
     }
 
     private fun observeBuffers() {
         viewModelScope.launch {
-            settingsRepository.getLogcatBuffers().collectLatest {
-                if (logcatBuffers != it && initDone) {
-                    logcatBuffers = it
-                    restartLogcat()
-                }
+            settingsRepository.getLogcatBuffers().distinctUntilChanged().onEach {
+                restartLogcat()
             }
         }
     }
@@ -204,18 +159,12 @@ class LogcatViewModel @Inject constructor(
     /**
      * Save logcat to a zip file.
      */
-    fun saveLogAsZip() {
-        viewModelScope.launch {
-            _logSaveResult.value = Event(
-                logcatRepository.saveLogAsZip(
-                    null, /* Tags isn't supported yet */
-                    cachedQuery,
-                    logLevel,
-                    includeDeviceInfo,
-                )
-            )
-        }
-    }
+    suspend fun saveLogAsZip() =
+        logcatRepository.saveLogAsZip(
+            null, /* Tags isn't supported yet */
+            _logLevel.first(),
+            includeDeviceInfo.first(),
+        )
 
     /**
      * Update and save the log level.
@@ -223,43 +172,21 @@ class LogcatViewModel @Inject constructor(
      * @param level the new log level.
      */
     fun setLogLevel(level: Int) {
-        if (!initDone) return
-        val newLogLevel = logLevelMap.keyAt(logLevelMap.indexOfValue(level))
-        if (newLogLevel == logLevel) return
-        logLevel = newLogLevel
+        val index = logLevelMap.indexOfValue(level).takeIf { it != -1 } ?: return
         viewModelScope.launch {
-            settingsRepository.setLogLevel(logLevel)
-            restartLogcat()
+            settingsRepository.setLogLevel(logLevelMap.keyAt(index))
         }
     }
-
-    /**
-     * Get the log level.
-     *
-     * @return the log level.
-     */
-    fun getLogLevel(): Int = logLevelMap[logLevel] ?: 0
 
     /**
      * Update and save setting indicating whether or not to
      * include device info.
      *
-     * @param include the value of the setting.
+     * @param includeDeviceInfo the value of the setting.
      */
-    fun setIncludeDeviceInfo(include: Boolean) {
-        if (!initDone || includeDeviceInfo == include) return
-        includeDeviceInfo = include
+    fun setIncludeDeviceInfo(includeDeviceInfo: Boolean) {
         viewModelScope.launch {
             settingsRepository.setIncludeDeviceInfo(includeDeviceInfo)
-        }
-    }
-
-    /**
-     * Toggle whether to expand log message by default.
-     */
-    fun toggleExpandedState() {
-        viewModelScope.launch {
-            settingsRepository.setExpandedByDefault(!isExpanded)
         }
     }
 
@@ -267,9 +194,25 @@ class LogcatViewModel @Inject constructor(
      * Clear all cached logs.
      */
     fun clearLogs() {
-        if (logList.isNotEmpty()) {
-            logList.clear()
-            _logcatLiveData.value = emptyList()
+        viewModelScope.launch {
+            listMutex.withLock {
+                if (logList.isNotEmpty()) {
+                    logList.clear()
+                }
+            }
+            notifyDataChanged()
+        }
+    }
+
+    fun expandItemAtIndex(index: Int, expanded: Boolean) {
+        viewModelScope.launch {
+            listMutex.withLock {
+                logList.getOrNull(index)?.copy(isExpanded = expanded)?.let {
+                    logList.removeAt(index)
+                    logList.add(index, it)
+                }
+            }
+            notifyDataChanged()
         }
     }
 
@@ -279,49 +222,101 @@ class LogcatViewModel @Inject constructor(
     }
 
     private fun startJob() {
-        if (!collectLogs || !initDone) return
+        // Make sure to cancel current active job
+        job?.cancel()
         job = viewModelScope.launch {
-            val logs = logcatRepository.getLogsAsList(
-                null /* Tags isn't supported yet */,
-                cachedQuery,
-                logLevel
-            )
-            val logSize = logs.size
-            logList.addAll(
-                if (sizeLimit < logSize) {
-                    logs.subList(logSize - sizeLimit, logSize - 1)
-                } else {
-                    logs
-                }.map {
-                    LogcatListData(it, isExpanded, textSize)
-                })
-            if (_loadingProgressLiveData.value?.peek() == true)
-                _loadingProgressLiveData.value = Event(false)
+            listMutex.withLock {
+                logList.clear()
+            }
+            val logLevel = settingsRepository.getLogLevel().first()
+            val logs = withContext(Dispatchers.Default) {
+                logcatRepository.getLogsAsList(
+                    null /* Tags isn't supported yet */,
+                    logLevel
+                ).toMutableList()
+            }
+            val sizeLimit = settingsRepository.getLogcatSizeLimit().first()
+            val logsToDrop = (logs.size - sizeLimit).coerceAtLeast(0)
+            withContext(Dispatchers.Default) {
+                listMutex.withLock {
+                    logList.addAll(
+                        logs.subList(
+                            logsToDrop,
+                            logs.lastIndex
+                        ).filter {
+                            it.hasString(cachedQuery)
+                        }.map {
+                            LogcatListData(it, isExpanded, textSize)
+                        }
+                    )
+                }
+            }
+            // Let's free some memory
+            logs.clear()
+            _loadingData.value = false
             notifyDataChanged()
+            delay(1000)
             logcatRepository.getLogcatStream(
                 null /* Tags isn't supported yet */,
-                cachedQuery,
                 logLevel
-            ).drop(logSize).collect {
-                logList.add(LogcatListData(it, isExpanded, textSize))
-                if (logList.size > sizeLimit) logList.removeFirstOrNull()
-                notifyDataChanged()
+            ).drop(logsToDrop)
+                .filter {
+                    it.hasString(cachedQuery)
+                }
+                .map {
+                    LogcatListData(it, isExpanded, textSize)
+                }
+                .collect {
+                    listMutex.withLock {
+                        logList.add(it)
+                        if (logList.size > sizeLimit) logList.removeFirstOrNull()
+                    }
+                    viewModelScope.launch {
+                        delay(50)
+                        notifyDataChanged()
+                    }
+                }
+        }
+    }
+
+    private suspend fun notifyDataChanged() {
+        withContext(Dispatchers.Default) {
+            listMutex.withLock {
+                _logcatList.value = logList.toList()
             }
         }
     }
 
-    private fun notifyDataChanged() {
-        if (!logcatUpdatePaused) {
-            _logcatLiveData.value = logList.toList()
+    private fun cancelJob() {
+        job?.cancel()
+        clearLogs()
+        _loadingData.value = true
+    }
+
+    fun saveRecentSearchQuery(query: String) {
+        viewModelScope.launch {
+            appRepository.saveRecentSearchQuery(query)
         }
     }
 
-    private fun cancelJob() {
-        if (job != null) {
+    fun toggleLogcatFlowState() {
+        _logcatFlowSuspended.value = !_logcatFlowSuspended.value
+        if (_logcatFlowSuspended.value) {
             job?.cancel()
-            job = null
+        } else {
+            startJob()
         }
-        clearLogs()
-        _loadingProgressLiveData.value = Event(true)
+    }
+
+    fun clearRecentSearch(query: String) {
+        viewModelScope.launch {
+            appRepository.clearRecentSearchQuery(query)
+        }
+    }
+
+    fun clearAllRecentSearches() {
+        viewModelScope.launch {
+            appRepository.clearAllRecentSearchQueries()
+        }
     }
 }

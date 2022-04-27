@@ -46,18 +46,16 @@ object LogcatReader {
      *
      * @param args command line arguments for logcat.
      * @param tags a list of string tags to filter the logs.
-     * @param query string to filter the logs.
      * @param logLevel the log level below which the logs should be discarded.
      * @return a [Flow] of [LogInfo].
      */
     fun readAsFlow(
         args: Map<String, String?>? = null,
         tags: List<String>? = null,
-        query: String?,
         logLevel: String,
     ): Flow<LogInfo> {
         return flow {
-            getInputStream(args, tags, query, logLevel).bufferedReader().use {
+            getInputStream(args, tags, logLevel).bufferedReader().use {
                 while (true) {
                     runCatching {
                         it.readLine()
@@ -74,17 +72,15 @@ object LogcatReader {
      *
      * @param args command line arguments for logcat.
      * @param tags a list of string tags to filter the logs.
-     * @param query string to filter the logs.
      * @param logLevel the log level below which the logs should be discarded.
      * @return current system logs joined to a string.
      */
     fun getRawLogs(
         args: Map<String, String?>? = null,
         tags: List<String>? = null,
-        query: String?,
         logLevel: String,
     ): String {
-        return getInputStream(args, tags, query, logLevel, dump = true).bufferedReader().use { br ->
+        return getInputStream(args, tags, logLevel, dump = true).bufferedReader().use { br ->
             br.readText()
         }
     }
@@ -92,7 +88,6 @@ object LogcatReader {
     private fun getInputStream(
         args: Map<String, String?>? = null,
         tags: List<String>? = null,
-        query: String?,
         logLevel: String,
         dump: Boolean = false,
     ): InputStream {
@@ -110,10 +105,6 @@ object LogcatReader {
         if (tags != null) {
             argsList.add(OPTION_DEFAULT_SILENT)
             tags.forEach { argsList.add(it) }
-        }
-        // Filter based on query
-        if (query?.isNotBlank() == true) {
-            argsList.add("| grep -i $query")
         }
         // Dump and close stream if specified
         if (dump) {

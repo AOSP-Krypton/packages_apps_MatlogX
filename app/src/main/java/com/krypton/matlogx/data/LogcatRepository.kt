@@ -38,7 +38,7 @@ import kotlinx.coroutines.withContext
 @Singleton
 class LogcatRepository @Inject constructor(
     @ApplicationContext context: Context,
-    private val zipFileSaver: ZipFileSaver,
+    private val zipFileSaver: ZipFileSaver
 ) {
 
     private val settingsDataStore = context.settingsDataStore
@@ -48,16 +48,14 @@ class LogcatRepository @Inject constructor(
      *
      * @param tags a list of string that will be used to print only
      *             logs with those string as tags.
-     * @param query string to filter the logs with.
      * @param logLevel the level of log below which logs should be omitted.
      * @return a flow of [LogInfo].
      */
     suspend fun getLogcatStream(
         tags: List<String>?,
-        query: String?,
         logLevel: String,
     ): Flow<LogInfo> {
-        return LogcatReader.readAsFlow(getLogcatArgs(), tags, query, logLevel)
+        return LogcatReader.readAsFlow(getLogcatArgs(), tags, logLevel)
             .flowOn(Dispatchers.IO)
     }
 
@@ -66,17 +64,15 @@ class LogcatRepository @Inject constructor(
      *
      * @param tags a list of string that will be used to print only
      *             logs with those string as tags.
-     * @param query string to filter the logs with.
      * @param logLevel the level of log below which logs should be omitted.
      * @return the logs as a [List] of [LogInfo].
      */
     suspend fun getLogsAsList(
         tags: List<String>?,
-        query: String?,
         logLevel: String,
     ): List<LogInfo> =
         withContext(Dispatchers.IO) {
-            LogcatReader.getRawLogs(getLogcatArgs(), tags, query, logLevel)
+            LogcatReader.getRawLogs(getLogcatArgs(), tags, logLevel)
                 .split("\n")
                 .filter { it.isNotBlank() }
                 .map { LogInfo.fromLine(it) }
@@ -87,20 +83,18 @@ class LogcatRepository @Inject constructor(
      *
      * @param tags a list of string that will be used to print only
      *             logs with those string as tags.
-     * @param query string to filter the logs with.
      * @param logLevel the level of log below which logs should be omitted.
      * @param includeDeviceInfo whether to include device info inside the zip.
      * @return a result with the [File] (or an exception if failed) that was saved.
      */
     suspend fun saveLogAsZip(
         tags: List<String>?,
-        query: String?,
         logLevel: String,
         includeDeviceInfo: Boolean,
     ): Result<Uri> =
         withContext(Dispatchers.IO) {
             zipFileSaver.saveZip(
-                LogcatReader.getRawLogs(getLogcatArgs(), tags, query, logLevel),
+                LogcatReader.getRawLogs(getLogcatArgs(), tags, logLevel),
                 includeDeviceInfo,
             )
         }

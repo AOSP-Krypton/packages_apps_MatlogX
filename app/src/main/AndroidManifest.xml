@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-     Copyright (C) 2021 AOSP-Krypton Project
+     Copyright (C) 2021-2022 AOSP-Krypton Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -27,42 +27,26 @@
         android:icon="@drawable/ic_matlogx"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MatlogX"
+        android:theme="@android:style/Theme.Material.Light.NoActionBar"
         tools:ignore="AllowBackup">
+
         <activity
             android:name=".ui.LogcatActivity"
             android:exported="true"
-            android:launchMode="singleTop">
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEARCH" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
         </activity>
-
-        <activity
-            android:name=".ui.SettingsActivity"
-            android:exported="false"
-            android:parentActivityName=".ui.LogcatActivity" />
-
-        <provider
-            android:name=".provider.SuggestionProvider"
-            android:authorities="com.krypton.matlogx.provider.SuggestionProvider"
-            android:exported="false" />
 
         <!-- QS Tile -->
         <service
             android:name=".services.LogTileService"
+            android:exported="true"
             android:icon="@drawable/ic_matlogx"
             android:label="@string/app_name"
-            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
-            android:exported="true">
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>

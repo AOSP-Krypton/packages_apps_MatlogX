@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-     Copyright (C) 2021 AOSP-Krypton Project
+     Copyright (C) 2021-2022 AOSP-Krypton Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -23,16 +23,12 @@
         <item>crash</item>
     </string-array>
 
-    <string-array name="log_level" translatable="false">
+    <string-array name="log_levels" translatable="false">
         <item>Verbose (Default)</item>
         <item>Debug</item>
         <item>Info</item>
         <item>Warn</item>
         <item>Error</item>
         <item>Fatal</item>
-    </string-array>
-
-    <string-array name="save_zip_items">
-        <item>@string/include_device_info</item>
     </string-array>
 </resources>

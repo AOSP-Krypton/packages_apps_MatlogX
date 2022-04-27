@@ -16,6 +16,7 @@
 
 package com.krypton.matlogx.ui.preferences
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
@@ -54,7 +55,15 @@ fun <T> ListPreference(
                 Column(modifier = Modifier.fillMaxWidth()) {
                     entries.forEach {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(
+                                    enabled = true,
+                                    onClick = {
+                                        showDialog = false
+                                        onEntrySelected(it.value)
+                                    },
+                                ),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             RadioButton(

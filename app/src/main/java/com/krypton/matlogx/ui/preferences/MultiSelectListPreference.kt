@@ -16,6 +16,7 @@
 
 package com.krypton.matlogx.ui.preferences
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -54,22 +55,30 @@ fun <T> MultiSelectListPreference(
             text = {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     entries.forEach { entry ->
+                        val updateCallback = { checked: Boolean ->
+                            values.toMutableList().apply {
+                                if (checked) {
+                                    add(entry.value)
+                                } else {
+                                    remove(entry.value)
+                                }
+                            }.toList()
+                        }
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(
+                                    enabled = true,
+                                    onClick = {
+                                        onValuesUpdated(updateCallback(!values.contains(entry.value)))
+                                    },
+                                ),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Checkbox(
                                 checked = values.contains(entry.value),
                                 onCheckedChange = { checked ->
-                                    onValuesUpdated(
-                                        values.toMutableList().apply {
-                                            if (checked) {
-                                                add(entry.value)
-                                            } else {
-                                                remove(entry.value)
-                                            }
-                                        }.toList()
-                                    )
+                                    onValuesUpdated(updateCallback(checked))
                                 },
                             )
                             Spacer(modifier = Modifier.width(16.dp))

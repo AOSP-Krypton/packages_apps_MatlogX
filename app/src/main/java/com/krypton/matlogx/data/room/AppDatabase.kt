@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 AOSP-Krypton Project
+ * Copyright (C) 2022 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-package com.krypton.matlogx.provider
+package com.krypton.matlogx.data.room
 
-import android.content.SearchRecentSuggestionsProvider
+import androidx.room.Database
+import androidx.room.RoomDatabase
 
-/**
- * Content provider for search query suggestions
- */
-class SuggestionProvider : SearchRecentSuggestionsProvider() {
-    init {
-        setupSuggestions(AUTHORITY, MODE)
-    }
-
-    companion object {
-        const val AUTHORITY = "com.krypton.matlogx.provider.SuggestionProvider"
-        const val MODE: Int = DATABASE_MODE_QUERIES
-    }
+@Database(
+    entities = [
+        RecentSearchEntity::class
+    ],
+    version = 1,
+    exportSchema = false,
+)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun recentSuggestionsDao(): RecentSuggestionsDao
 }
