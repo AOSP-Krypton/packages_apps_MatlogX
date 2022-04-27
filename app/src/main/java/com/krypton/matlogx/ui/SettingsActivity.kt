@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 AOSP-Krypton Project
+ * Copyright (C) 2021-2022 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,21 +18,35 @@ package com.krypton.matlogx.ui
 
 import android.os.Bundle
 
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.runtime.remember
 
-import com.krypton.matlogx.R
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.krypton.matlogx.ui.theme.LogcatTheme
+import com.krypton.matlogx.viewmodel.SettingsViewModel
 
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class SettingsActivity: AppCompatActivity() {
+class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_settings)
-        setSupportActionBar(findViewById<Toolbar>(R.id.toolbar).apply {
-            setTitle(R.string.settings)
-        })
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        setContent {
+            LogcatTheme {
+                val settingsViewModel = remember {
+                    viewModels<SettingsViewModel>()
+                }
+                val systemUiController = rememberSystemUiController()
+                SettingsScreen(
+                    settingsViewModel = settingsViewModel.value,
+                    systemUiController = systemUiController,
+                    onBackPressed = {
+                        onBackPressed()
+                    }
+                )
+            }
+        }
     }
 }

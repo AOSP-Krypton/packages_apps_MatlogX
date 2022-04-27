@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 AOSP-Krypton Project
+ * Copyright (C) 2021-2022 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 package com.krypton.matlogx.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 
@@ -27,7 +25,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 
 import javax.inject.Inject
 
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -35,32 +33,17 @@ class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
-    private val _logcatBuffers = MutableLiveData<String>()
-    val logcatBuffers: LiveData<String> = _logcatBuffers
+    val logcatBuffers: Flow<String>
+        get() = settingsRepository.getLogcatBuffers()
 
-    private val _logcatSizeLimit = MutableLiveData<Int>()
-    val logcatSizeLimit: LiveData<Int> = _logcatSizeLimit
+    val logcatSizeLimit: Flow<Int>
+            get() = settingsRepository.getLogcatSizeLimit()
 
-    private val _expandedByDefault = MutableLiveData<Boolean>()
-    val expandedByDefault: LiveData<Boolean> = _expandedByDefault
+    val expandedByDefault: Flow<Boolean>
+        get() = settingsRepository.getExpandedByDefault()
 
-    private val _textSize = MutableLiveData<Int>()
-    val textSize: LiveData<Int> = _textSize
-
-    init {
-        viewModelScope.launch {
-            settingsRepository.getLogcatBuffers().collectLatest { _logcatBuffers.value = it }
-        }
-        viewModelScope.launch {
-            settingsRepository.getLogcatSizeLimit().collectLatest { _logcatSizeLimit.value = it }
-        }
-        viewModelScope.launch {
-            settingsRepository.getExpandedByDefault().collectLatest { _expandedByDefault.value = it }
-        }
-        viewModelScope.launch {
-            settingsRepository.getTextSize().collectLatest { _textSize.value = it }
-        }
-    }
+    val textSize: Flow<Int>
+        get() = settingsRepository.getTextSize()
 
     fun setLogcatBuffers(buffers: String) {
         viewModelScope.launch {

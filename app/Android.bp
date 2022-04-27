@@ -21,6 +21,10 @@ android_app_import {
         "privapp_whitelist-matlogx",
     ],
     apk: "build/outputs/apk/release/app-release*.apk",
+    optional_uses_libs: [
+        "androidx.window.extensions",
+        "androidx.window.sidecar",
+    ],
 }
 
 prebuilt_etc {
