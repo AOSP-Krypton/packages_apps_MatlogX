@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.krypton.matlogx.viewmodel
+package com.krypton.matlogx.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 
-import com.krypton.matlogx.repo.SettingsRepository
+import com.krypton.matlogx.data.settings.SettingsRepository
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 

@@ -25,7 +25,7 @@ import androidx.compose.runtime.remember
 
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.krypton.matlogx.ui.theme.LogcatTheme
-import com.krypton.matlogx.viewmodel.SettingsViewModel
+import com.krypton.matlogx.viewmodels.SettingsViewModel
 
 import dagger.hilt.android.AndroidEntryPoint
 

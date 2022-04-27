@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 AOSP-Krypton Project
+ * Copyright (C) 2021-2022 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.krypton.matlogx.viewmodel
+package com.krypton.matlogx.viewmodels
 
 import android.net.Uri
 import android.util.ArrayMap
@@ -26,8 +26,8 @@ import androidx.lifecycle.viewModelScope
 
 import com.krypton.matlogx.data.Event
 import com.krypton.matlogx.data.LogcatListData
-import com.krypton.matlogx.repo.LogcatRepository
-import com.krypton.matlogx.repo.SettingsRepository
+import com.krypton.matlogx.data.LogcatRepository
+import com.krypton.matlogx.data.settings.SettingsRepository
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 

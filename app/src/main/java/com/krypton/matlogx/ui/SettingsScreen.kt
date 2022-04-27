@@ -26,7 +26,7 @@ import com.google.accompanist.systemuicontroller.SystemUiController
 import com.krypton.matlogx.R
 import com.krypton.matlogx.ui.preferences.*
 import com.krypton.matlogx.ui.widgets.CollapsingToolbarScreen
-import com.krypton.matlogx.viewmodel.SettingsViewModel
+import com.krypton.matlogx.viewmodels.SettingsViewModel
 
 import kotlinx.coroutines.flow.map
 

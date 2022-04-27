@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 AOSP-Krypton Project
+ * Copyright (C) 2021-2022 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package com.krypton.matlogx.reader
-
-import com.krypton.matlogx.data.LogInfo
+package com.krypton.matlogx.data
 
 import java.io.InputStream
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.krypton.matlogx.data
+package com.krypton.matlogx.data.settings
 
 object SettingsDefaults {
     const val LOG_SIZE_DEFAULT = 10000

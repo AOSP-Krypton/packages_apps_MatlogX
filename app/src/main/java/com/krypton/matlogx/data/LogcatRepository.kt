@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 AOSP-Krypton Project
+ * Copyright (C) 2021-2022 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package com.krypton.matlogx.repo
+package com.krypton.matlogx.data
 
 import android.content.Context
 import android.net.Uri
 
-import com.krypton.matlogx.data.LogInfo
-import com.krypton.matlogx.data.settingsDataStore
-import com.krypton.matlogx.reader.LogcatReader
-import com.krypton.matlogx.util.FileUtil
+import com.krypton.matlogx.data.settings.settingsDataStore
 
 import dagger.hilt.android.qualifiers.ApplicationContext
 
@@ -40,7 +37,7 @@ import kotlinx.coroutines.withContext
 @Singleton
 class LogcatRepository @Inject constructor(
     @ApplicationContext context: Context,
-    private val fileUtil: FileUtil,
+    private val zipFileSaver: ZipFileSaver,
 ) {
 
     private val settingsDataStore = context.settingsDataStore
@@ -100,7 +97,7 @@ class LogcatRepository @Inject constructor(
         includeDeviceInfo: Boolean,
     ): Result<Uri> =
         withContext(Dispatchers.IO) {
-            fileUtil.saveZip(
+            zipFileSaver.saveZip(
                 LogcatReader.getRawLogs(getLogcatArgs(), tags, query, logLevel),
                 includeDeviceInfo,
             )

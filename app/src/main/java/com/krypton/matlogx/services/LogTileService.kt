@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 AOSP-Krypton Project
+ * Copyright (C) 2021-2022 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 
 import com.krypton.matlogx.R
-import com.krypton.matlogx.repo.LogcatRepository
-import com.krypton.matlogx.repo.SettingsRepository
+import com.krypton.matlogx.data.LogcatRepository
+import com.krypton.matlogx.data.settings.SettingsRepository
 
 import dagger.hilt.android.AndroidEntryPoint
 

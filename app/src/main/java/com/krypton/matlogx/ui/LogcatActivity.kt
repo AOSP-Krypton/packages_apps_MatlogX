@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 AOSP-Krypton Project
+ * Copyright (C) 2021-2022 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.krypton.matlogx.R
 import com.krypton.matlogx.provider.SuggestionProvider
-import com.krypton.matlogx.viewmodel.LogcatViewModel
+import com.krypton.matlogx.viewmodels.LogcatViewModel
 
 import dagger.hilt.android.AndroidEntryPoint
 
