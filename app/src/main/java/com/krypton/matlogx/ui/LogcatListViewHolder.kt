@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 AOSP-Krypton Project
+ * Copyright (C) 2021-2022 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ class LogcatListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val messageView: TextView = itemView.findViewById(R.id.message)
     val levelView: TextView = itemView.findViewById(R.id.level)
 
-    private var data: LogcatListData? = null
+    private lateinit var data: LogcatListData
 
     fun setData(data: LogcatListData) {
         this.data = data
@@ -74,12 +74,10 @@ class LogcatListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     }
 
     private fun updateView() {
-        data?.let {
-            val showPidAndTimestamp = it.isExpanded && !it.logInfo.hasOnlyMessage()
-            pidView.visibility = if (showPidAndTimestamp) View.VISIBLE else View.GONE
-            timestampView.visibility = if (showPidAndTimestamp) View.VISIBLE else View.GONE
-            tagView.isSingleLine = !it.isExpanded
-            messageView.isSingleLine = !it.isExpanded
-        }
+        val showPidAndTimestamp = data.isExpanded && !data.logInfo.hasOnlyMessage()
+        pidView.visibility = if (showPidAndTimestamp) View.VISIBLE else View.GONE
+        timestampView.visibility = if (showPidAndTimestamp) View.VISIBLE else View.GONE
+        tagView.isSingleLine = !data.isExpanded
+        messageView.isSingleLine = !data.isExpanded
     }
 }

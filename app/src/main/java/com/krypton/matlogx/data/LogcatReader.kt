@@ -18,10 +18,8 @@ package com.krypton.matlogx.data
 
 import java.io.InputStream
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 
 /**
  * A utility object to reads lines from system logcat.
@@ -52,7 +50,7 @@ object LogcatReader {
      * @param logLevel the log level below which the logs should be discarded.
      * @return a [Flow] of [LogInfo].
      */
-    fun read(
+    fun readAsFlow(
         args: Map<String, String?>? = null,
         tags: List<String>? = null,
         query: String?,
@@ -68,7 +66,7 @@ object LogcatReader {
                     }
                 }
             }
-        }.flowOn(Dispatchers.IO)
+        }
     }
 
     /**
@@ -103,35 +101,26 @@ object LogcatReader {
             "*:$logLevel",
             "--format=time"
         )
-        appendArgs(args, argsList)
-        appendTags(tags, argsList)
+        // Append args
+        args?.forEach { (k, v) ->
+            argsList.add(k)
+            argsList.add(v ?: "")
+        }
+        // Append tags
+        if (tags != null) {
+            argsList.add(OPTION_DEFAULT_SILENT)
+            tags.forEach { argsList.add(it) }
+        }
+        // Filter based on query
         if (query?.isNotBlank() == true) {
             argsList.add("| grep -i $query")
         }
+        // Dump and close stream if specified
         if (dump) {
             argsList.add(OPTION_DUMP)
         }
         val process = ProcessBuilder("/bin/sh", "-c", argsList.joinToString(" ")).start()
         process.outputStream.close()
         return process.inputStream
-    }
-
-    private fun appendArgs(
-        args: Map<String, String?>?,
-        list: MutableList<String>
-    ): MutableList<String> {
-        args?.forEach { (k, v) ->
-            list.add(k)
-            list.add(v ?: "")
-        }
-        return list
-    }
-
-    private fun appendTags(tags: List<String>?, list: MutableList<String>): MutableList<String> {
-        if (tags != null) {
-            list.add(OPTION_DEFAULT_SILENT)
-            tags.forEach { list.add(it) }
-        }
-        return list
     }
 }

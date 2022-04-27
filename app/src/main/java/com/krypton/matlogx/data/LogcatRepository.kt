@@ -31,6 +31,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
@@ -56,7 +57,8 @@ class LogcatRepository @Inject constructor(
         query: String?,
         logLevel: String,
     ): Flow<LogInfo> {
-        return LogcatReader.read(getLogcatArgs(), tags, query, logLevel)
+        return LogcatReader.readAsFlow(getLogcatArgs(), tags, query, logLevel)
+            .flowOn(Dispatchers.IO)
     }
 
     /**

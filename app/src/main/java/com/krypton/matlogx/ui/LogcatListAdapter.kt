@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 AOSP-Krypton Project
+ * Copyright (C) 2021-2022 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,16 +69,11 @@ class LogcatListAdapter(context: Context) : RecyclerView.Adapter<LogcatListViewH
 
     override fun onBindViewHolder(holder: LogcatListViewHolder, position: Int) {
         val data = list[position]
-        holder.apply {
-            setData(data)
-            if (!data.logInfo.hasOnlyMessage()) {
-                val color = colorMap[data.logInfo.level]
-                if (color != null) {
-                    levelView.setBackgroundColor(color.first)
-                    levelView.setTextColor(color.second)
-                }
-            }
-        }
+        holder.setData(data)
+        if (data.logInfo.hasOnlyMessage()) return
+        val color = colorMap[data.logInfo.level] ?: return
+        holder.levelView.setBackgroundColor(color.first)
+        holder.levelView.setTextColor(color.second)
     }
 
     override fun getItemCount(): Int = list.size

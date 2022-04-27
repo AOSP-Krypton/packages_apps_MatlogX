@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 AOSP-Krypton Project
+ * Copyright (C) 2021-2022 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,12 @@ package com.krypton.matlogx.data
  * @property level the log level of this entry.
  * @property message the message that was logged.
  */
-data class LogInfo(
-    val pid: Short = -1,
-    val time: String = "",
-    val tag: String = "",
-    val level: Char = ' ',
-    val message: String = "",
+data class LogInfo constructor(
+    val pid: Short? = null,
+    val time: String? = null,
+    val tag: String? = null,
+    val level: Char? = null,
+    val message: String? = null,
 ) {
     /**
      * Check whether this object represents only a message.
@@ -39,7 +39,7 @@ data class LogInfo(
      *
      * @return true if this represents only a message.
      */
-    fun hasOnlyMessage() = level.isWhitespace()
+    fun hasOnlyMessage() = level == null
 
     companion object {
         private val timeRegex = Regex("^[0-9]{2}-[0-9]{2}\\s[0-9]{2}:[0-9]{2}:[0-9]{2}")
@@ -59,14 +59,16 @@ data class LogInfo(
             // Log format:
             // DD-MM HH:MM:SS D/TAG( PID): message
             val metadata = logLine.substringBefore("/")
-            val pid = pidRegex.find(logLine)?.value?.substringAfter("(")?.substringBefore(")")
-                ?.trimStart()?.toShortOrNull()
-                ?: -1
+            val pid = pidRegex.find(logLine)?.value
+                ?.substringAfter("(")
+                ?.substringBefore("):")
+                ?.trim()
+                ?.toShortOrNull()
             return LogInfo(
                 pid = pid,
-                time = timeRegex.find(metadata)?.value ?: "",
+                time = timeRegex.find(metadata)?.value,
                 // Assuming that no one insane used ( in their tag
-                tag = logLine.substringAfter("/").substringBefore("("),
+                tag = logLine.substringAfter("/").substringBefore("( $pid):"),
                 level = metadata.last(),
                 message = logLine.substringAfter("):").trim(),
             )

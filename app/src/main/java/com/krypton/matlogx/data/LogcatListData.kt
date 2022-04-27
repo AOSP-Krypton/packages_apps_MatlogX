@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 AOSP-Krypton Project
+ * Copyright (C) 2021-2022 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,11 @@ package com.krypton.matlogx.data
  * Wrapper class around [LogInfo] representing an item
  * in logcat list view.
  *
- * @property logInfo
- * @property isExpanded
+ * @property isExpanded whether full log message including PID and timestamp should be shown.
+ * @property textSize text size in sp.
  */
 data class LogcatListData(
     val logInfo: LogInfo,
-    /**
-     * Whether full log message including PID and timestamp should be shown.
-     */
     var isExpanded: Boolean = false,
-    /**
-     * Text size in sp.
-     */
     var textSize: Int = 12,
 )
