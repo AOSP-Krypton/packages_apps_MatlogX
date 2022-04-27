@@ -16,4 +16,4 @@
 
 package com.krypton.matlogx.ui.preferences
 
-data class Entry<T>(val name: String, val value: T)
+data class Entry<out T>(val name: String, val value: T)
