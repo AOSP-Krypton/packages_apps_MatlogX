@@ -40,7 +40,7 @@ fun Preference(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = clickable, onClick = onClick)
-            .padding(top = 24.dp, end = 12.dp),
+            .padding(start = 24.dp, top = 12.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (startWidget != null) {
