@@ -52,6 +52,10 @@
     <string name="stop_recording">Stop recording</string>
     <string name="recording_logs">Recording logs</string>
     <string name="stop">Stop</string>
+    <string name="saved_logs">Saved logs</string>
+    <string name="saved_logs_button_content_desc">Saved logs button</string>
+    <string name="activity_not_found">No activities found to open directory</string>
+    <string name="failed_to_open_directory">Failed to open saved logs directory</string>
 
     <!-- Settings -->
     <string name="settings">Settings</string>

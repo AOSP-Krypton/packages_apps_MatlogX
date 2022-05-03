@@ -18,22 +18,30 @@ package com.krypton.matlogx.ui.states
 
 import android.content.Context
 import android.content.Intent
+
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.krypton.matlogx.R
 import com.krypton.matlogx.services.LogRecordService
 import com.krypton.matlogx.ui.Routes
 import com.krypton.matlogx.viewmodels.LogcatViewModel
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 
 class TopBarState(
     private val logcatViewModel: LogcatViewModel,
     private val navHostController: NavHostController,
+    private val coroutineScope: CoroutineScope,
+    private val snackbarHostState: SnackbarHostState,
     private val context: Context
 ) {
 
@@ -88,6 +96,29 @@ class TopBarState(
     fun stopRecordingLogs() {
         context.stopService(Intent(context, LogRecordService::class.java))
     }
+
+    fun openSavedLogs() {
+        val uriResult = logcatViewModel.getSavedLogsDirectoryUri()
+        if (uriResult.isSuccess) {
+            val intent = Intent(Intent.ACTION_VIEW, uriResult.getOrThrow())
+            val resolvedActivities =
+                context.packageManager.queryIntentActivities(intent, 0 /* flags */)
+            if (resolvedActivities.isNotEmpty()) {
+                context.startActivity(intent)
+            } else {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(context.getString(R.string.activity_not_found))
+                }
+            }
+        } else {
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(
+                    uriResult.exceptionOrNull()?.localizedMessage
+                        ?: context.getString(R.string.failed_to_open_directory)
+                )
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -95,7 +126,9 @@ class TopBarState(
 fun rememberTopBarState(
     logcatViewModel: LogcatViewModel,
     navHostController: NavHostController = rememberAnimatedNavController(),
+    coroutineScope: CoroutineScope = rememberCoroutineScope(),
+    snackbarHostState: SnackbarHostState = SnackbarHostState(),
     context: Context = LocalContext.current
-) = remember(logcatViewModel, context) {
-    TopBarState(logcatViewModel, navHostController, context)
+) = remember(logcatViewModel, snackbarHostState, context) {
+    TopBarState(logcatViewModel, navHostController, coroutineScope, snackbarHostState, context)
 }

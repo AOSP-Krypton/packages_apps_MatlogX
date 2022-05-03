@@ -37,7 +37,7 @@ import kotlinx.coroutines.withContext
 @Singleton
 class LogcatRepository @Inject constructor(
     @ApplicationContext context: Context,
-    private val logSaveHelper: LogSaveHelper
+    private val logFileManager: LogFileManager
 ) {
 
     private val settingsDataStore = context.settingsDataStore
@@ -99,7 +99,7 @@ class LogcatRepository @Inject constructor(
         includeDeviceInfo: Boolean,
     ): Result<Uri> =
         withContext(Dispatchers.IO) {
-            logSaveHelper.saveZip(
+            logFileManager.saveZip(
                 LogcatReader.getRawLogs(getLogcatArgs(), tags, logLevel),
                 includeDeviceInfo,
             )
@@ -108,7 +108,7 @@ class LogcatRepository @Inject constructor(
     suspend fun recordLogs() {
         _recordingLogs.value = true
         val recordingFileUriResult = withContext(Dispatchers.IO) {
-            logSaveHelper.getNewRecordingFileUri()
+            logFileManager.getNewRecordingFileUri()
         }
         recordingFileUriResult.onFailure {
             recordLogErrorChannel.send(it)
@@ -167,4 +167,6 @@ class LogcatRepository @Inject constructor(
         val buffers = settingsDataStore.data.map { it.logcatBuffers }.first()
         return mapOf(LogcatReader.OPTION_BUFFER to buffers)
     }
+
+    fun getSavedLogsDirectoryUri(): Result<Uri> = logFileManager.getLogDirUri()
 }

@@ -149,6 +149,8 @@ fun rememberLogcatScreenState(
     topBarState: TopBarState = rememberTopBarState(
         logcatViewModel,
         navHostController,
+        coroutineScope,
+        snackbarHostState,
         context
     ),
 ) = remember(

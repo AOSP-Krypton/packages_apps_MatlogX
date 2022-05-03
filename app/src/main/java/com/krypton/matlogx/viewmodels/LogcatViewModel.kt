@@ -16,6 +16,7 @@
 
 package com.krypton.matlogx.viewmodels
 
+import android.net.Uri
 import android.util.ArrayMap
 
 import androidx.lifecycle.ViewModel
@@ -321,5 +322,9 @@ class LogcatViewModel @Inject constructor(
         viewModelScope.launch {
             appRepository.clearAllRecentSearchQueries()
         }
+    }
+
+    fun getSavedLogsDirectoryUri(): Result<Uri> {
+        return logcatRepository.getSavedLogsDirectoryUri()
     }
 }

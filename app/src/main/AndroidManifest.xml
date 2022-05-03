@@ -23,6 +23,12 @@
         android:name="android.permission.READ_LOGS"
         tools:ignore="ProtectedPermissions" />
 
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+        </intent>
+    </queries>
+
     <application
         android:name=".LogcatApp"
         android:icon="@drawable/ic_matlogx"

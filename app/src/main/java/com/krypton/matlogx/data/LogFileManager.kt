@@ -36,7 +36,7 @@ import javax.inject.Singleton
  * Utility class that can write files to application cache dir.
  */
 @Singleton
-class LogSaveHelper @Inject constructor(
+class LogFileManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
 
@@ -85,6 +85,13 @@ class LogSaveHelper @Inject constructor(
             ?: return Result.failure(Throwable("Failed to create zip file"))
         return zip(contentsToZip, zipFile)
     }
+
+    /**
+     * Get the user selected directory for saving logs.
+     *
+     * @return a [Result] holding the [Uri] to the directory, or an [Exception] on failure.
+     */
+    fun getLogDirUri(): Result<Uri> = getLogDir().map { it.uri }
 
     private fun getLogDir(): Result<DocumentFile> {
         // Create a sub directory inside the directory we have access.

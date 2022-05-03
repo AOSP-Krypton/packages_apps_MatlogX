@@ -197,6 +197,15 @@ fun TopBarOverflowMenu(
             }
         )
         MenuItem(
+            title = stringResource(id = R.string.saved_logs),
+            iconContentDescription = stringResource(id = R.string.saved_logs_button_content_desc),
+            painter = painterResource(id = R.drawable.ic_baseline_file_open_24),
+            onClick = {
+                menuExpanded = false
+                topBarState.openSavedLogs()
+            }
+        )
+        MenuItem(
             title = stringResource(id = R.string.settings),
             iconContentDescription = stringResource(id = R.string.clear_logs_button_content_desc),
             imageVector = Icons.Filled.Settings,
