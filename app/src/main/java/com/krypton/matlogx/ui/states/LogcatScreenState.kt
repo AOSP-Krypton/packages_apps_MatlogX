@@ -69,6 +69,9 @@ class LogcatScreenState(
     val includeDeviceInfo: Flow<Boolean>
         get() = logcatViewModel.includeDeviceInfo
 
+    val logcatStreamPaused: Flow<Boolean>
+        get() = logcatViewModel.logcatStreamPaused
+
     init {
         if (hasReadLogsPermission) {
             logcatViewModel.init()

@@ -151,8 +151,9 @@ fun LogcatScreen(
                 val logcatList by logcatScreenState.logcatList.collectAsState(emptyList())
                 val listState = rememberLazyListState()
                 var fabState by remember { mutableStateOf<FABState>(FABState.Gone) }
-                LaunchedEffect(logcatList) {
-                    if (logcatList.isNotEmpty()) {
+                val logcatStreamPaused by logcatScreenState.logcatStreamPaused.collectAsState(false)
+                LaunchedEffect(logcatList, logcatStreamPaused) {
+                    if (logcatList.isNotEmpty() && !logcatStreamPaused) {
                         listState.animateScrollToItem(logcatList.lastIndex)
                         // Make sure to hide FAB when auto scrolling
                         // as nested scroll connection won't know about internal
@@ -343,14 +344,17 @@ fun PermissionDialog(
 fun LogItem(item: LogcatListData, onExpansionChanged: (Boolean) -> Unit) {
     val textSize = item.textSize.toFloat()
     val hasOnlyMessage = item.logInfo.hasOnlyMessage()
+    Divider()
     Column(
         verticalArrangement = Arrangement.Top,
-        modifier = Modifier.clickable(
-            enabled = true,
-            onClick = {
-                onExpansionChanged(!item.isExpanded)
-            },
-        )
+        modifier = Modifier
+            .clickable(
+                enabled = true,
+                onClick = {
+                    onExpansionChanged(!item.isExpanded)
+                },
+            )
+            .padding(vertical = 8.dp)
     ) {
         if (item.isExpanded && !hasOnlyMessage) {
             Row(verticalAlignment = Alignment.Top) {

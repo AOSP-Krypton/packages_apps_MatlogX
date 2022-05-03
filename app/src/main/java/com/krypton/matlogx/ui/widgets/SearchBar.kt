@@ -17,8 +17,10 @@
 package com.krypton.matlogx.ui.widgets
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
@@ -27,9 +29,11 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,7 +41,7 @@ import androidx.compose.ui.unit.dp
 
 import com.krypton.matlogx.R
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun SearchBar(
     text: String,
@@ -51,7 +55,13 @@ fun SearchBar(
     maxHistoryCountToShow: Int = 10,
     colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors()
 ) {
-    val focusManager = LocalFocusManager.current
+    val softwareKeyboardController = LocalSoftwareKeyboardController.current
+    val interactionSource = remember { MutableInteractionSource() }
+    val interactions = interactionSource.interactions.collectAsState(null)
+    var historyVisible by remember { mutableStateOf(true) }
+    if (interactions.value is PressInteraction.Press) {
+        historyVisible = true
+    }
     ExposedDropdownMenuBox(expanded = history.isNotEmpty(), onExpandedChange = {}) {
         var searchText by remember { mutableStateOf(text) }
         TextField(
@@ -77,7 +87,7 @@ fun SearchBar(
                         enabled = true,
                         onClick = {
                             onDismissRequest()
-                            focusManager.clearFocus()
+                            softwareKeyboardController?.hide()
                         },
                     ),
                     imageVector = Icons.Filled.Close,
@@ -85,42 +95,48 @@ fun SearchBar(
                 )
             },
             keyboardActions = KeyboardActions(
-                onDone = {
+                onSearch = {
                     onSearchRequest(searchText)
+                    historyVisible = false
+                    softwareKeyboardController?.hide()
                 },
             ),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             singleLine = true,
-            colors = colors
+            colors = colors,
+            interactionSource = interactionSource
         )
-        ExposedDropdownMenu(
-            expanded = history.isNotEmpty(),
-            onDismissRequest = {},
-        ) {
-            history.filter {
-                it.contains(searchText, true)
-            }.take(maxHistoryCountToShow)
-                .forEach {
-                    RecentSearchRow(
-                        text = it,
-                        onClick = {
-                            searchText = it
-                            onSearchRequest(it)
-                        },
-                        onClearRecentQueryRequest = {
-                            onClearRecentQueryRequest(it)
-                        }
-                    )
-                }
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(enabled = true, onClick = onClearAllRecentQueriesRequest)
-                    .padding(8.dp),
-                text = stringResource(id = R.string.clear),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
+        if (historyVisible) {
+            ExposedDropdownMenu(
+                expanded = history.isNotEmpty(),
+                onDismissRequest = {},
+            ) {
+                history.filter {
+                    it.contains(searchText, true)
+                }.take(maxHistoryCountToShow)
+                    .forEach {
+                        RecentSearchRow(
+                            text = it,
+                            onClick = {
+                                searchText = it
+                                onSearchRequest(it)
+                            },
+                            onClearRecentQueryRequest = {
+                                onClearRecentQueryRequest(it)
+                            }
+                        )
+                    }
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(enabled = true, onClick = onClearAllRecentQueriesRequest)
+                        .padding(8.dp),
+                    text = stringResource(id = R.string.clear),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }

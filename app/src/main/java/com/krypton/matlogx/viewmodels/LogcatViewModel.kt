@@ -132,7 +132,8 @@ class LogcatViewModel @Inject constructor(
 
     private fun observeLogLevel() {
         viewModelScope.launch {
-            settingsRepository.getLogLevel().distinctUntilChanged().onEach {
+            settingsRepository.getLogLevel().collect {
+                _logcatFlowSuspended.value = false
                 restartLogcat()
             }
         }
@@ -140,7 +141,8 @@ class LogcatViewModel @Inject constructor(
 
     private fun observeLogSizeLimit() {
         viewModelScope.launch {
-            settingsRepository.getLogcatSizeLimit().distinctUntilChanged().onEach {
+            settingsRepository.getLogcatSizeLimit().collect {
+                _logcatFlowSuspended.value = false
                 restartLogcat()
             }
         }
@@ -148,7 +150,8 @@ class LogcatViewModel @Inject constructor(
 
     private fun observeBuffers() {
         viewModelScope.launch {
-            settingsRepository.getLogcatBuffers().distinctUntilChanged().onEach {
+            settingsRepository.getLogcatBuffers().collect {
+                _logcatFlowSuspended.value = false
                 restartLogcat()
             }
         }
@@ -157,7 +160,14 @@ class LogcatViewModel @Inject constructor(
     fun handleSearch(query: String?) {
         if (cachedQuery == query) return
         cachedQuery = query
-        restartLogcat()
+        viewModelScope.launch {
+            notifyDataChanged()
+        }
+    }
+
+    private fun restartLogcat() {
+        cancelJob()
+        startJob()
     }
 
     /**
@@ -220,11 +230,6 @@ class LogcatViewModel @Inject constructor(
         }
     }
 
-    private fun restartLogcat() {
-        cancelJob()
-        startJob()
-    }
-
     private fun startJob() {
         // Make sure to cancel current active job
         job?.cancel()
@@ -264,9 +269,6 @@ class LogcatViewModel @Inject constructor(
                 null /* Tags isn't supported yet */,
                 logLevel
             ).drop(logsToDrop)
-                .filter {
-                    it.hasString(cachedQuery)
-                }
                 .map {
                     LogcatListData(it, isExpanded, textSize)
                 }
@@ -286,7 +288,9 @@ class LogcatViewModel @Inject constructor(
     private suspend fun notifyDataChanged() {
         withContext(Dispatchers.Default) {
             listMutex.withLock {
-                _logcatList.value = logList.toList()
+                _logcatList.value = logList.filter {
+                    it.logInfo.hasString(cachedQuery)
+                }
             }
         }
     }
