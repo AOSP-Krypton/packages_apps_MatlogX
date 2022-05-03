@@ -30,6 +30,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -38,10 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.ExperimentalUnitApi
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.DialogProperties
 
 import com.krypton.matlogx.R
@@ -233,38 +231,29 @@ fun LogLevelDialog(
     onLogLevelSelected: (Int) -> Unit
 ) {
     val levels = stringArrayResource(id = R.array.log_levels)
-    var selectedLogLevel by remember { mutableStateOf(levels[currentLevel]) }
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onLogLevelSelected(levels.indexOf(selectedLogLevel))
-                },
-            ) {
-                Text(text = stringResource(id = android.R.string.ok))
-            }
-        },
+        confirmButton = {},
         properties = DialogProperties(dismissOnClickOutside = true, dismissOnBackPress = true),
         title = {
             Text(text = stringResource(id = R.string.log_level))
         },
         text = {
             Column {
-                levels.forEach { level ->
+                levels.forEachIndexed { index, level ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.clickable(
                             enabled = true,
                             onClick = {
-                                selectedLogLevel = level
+                                onLogLevelSelected(index)
                             }
                         )
                     ) {
                         RadioButton(
-                            selected = selectedLogLevel == level,
+                            selected = currentLevel == index,
                             onClick = {
-                                selectedLogLevel = level
+                                onLogLevelSelected(index)
                             }
                         )
                         Text(level, modifier = Modifier.weight(1f))
@@ -372,12 +361,17 @@ fun LogItem(item: LogcatListData, onExpansionChanged: (Boolean) -> Unit) {
         }
         Row(verticalAlignment = Alignment.Top) {
             if (!hasOnlyMessage) {
+                val color = getColorForLevel(
+                    item.logInfo.level,
+                    MaterialTheme.colorScheme.onSurface,
+                )
                 Text(
                     modifier = Modifier.weight(.25f),
                     text = item.logInfo.tag.toString(),
                     maxLines = if (item.isExpanded) Int.MAX_VALUE else 1,
                     fontSize = TextUnit(textSize, TextUnitType.Sp),
                     overflow = TextOverflow.Ellipsis,
+                    color = color
                 )
                 Text(
                     text = item.logInfo.level.toString(),
@@ -385,7 +379,8 @@ fun LogItem(item: LogcatListData, onExpansionChanged: (Boolean) -> Unit) {
                         .weight(.05f)
                         .padding(horizontal = 2.dp),
                     fontSize = TextUnit(textSize, TextUnitType.Sp),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    color = color
                 )
             }
             Text(
@@ -398,6 +393,14 @@ fun LogItem(item: LogcatListData, onExpansionChanged: (Boolean) -> Unit) {
         }
     }
 }
+
+fun getColorForLevel(level: Char?, primaryColor: Color): Color =
+    when (level) {
+        'V', 'I', 'D' -> primaryColor
+        'W' -> androidx.compose.ui.graphics.lerp(primaryColor, Color.Red, 0.5f)
+        'E', 'F' -> Color.Red
+        else -> primaryColor
+    }
 
 @Preview
 @Composable
