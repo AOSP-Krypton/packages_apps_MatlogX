@@ -165,4 +165,26 @@ class SettingsRepository @Inject constructor(
                 .build()
         }
     }
+
+    /**
+     * Get write buffer size for writing logs.
+     *
+     * @return the saved value as a [Flow].
+     */
+    fun getWriteBufferSize(): Flow<Int> = settingsDataStore.data.map {
+        it.writeBufferSize
+    }
+
+    /**
+     * Save write buffer size.
+     *
+     * @param size the value to save.
+     */
+    suspend fun setWriteBufferSize(size: Int) {
+        settingsDataStore.updateData {
+            it.toBuilder()
+                .setWriteBufferSize(size)
+                .build()
+        }
+    }
 }

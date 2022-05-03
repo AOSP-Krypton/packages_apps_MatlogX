@@ -16,28 +16,35 @@
 
 package com.krypton.matlogx.ui.states
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.krypton.matlogx.services.LogRecordService
 import com.krypton.matlogx.ui.Routes
 import com.krypton.matlogx.viewmodels.LogcatViewModel
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 
 class TopBarState(
     private val logcatViewModel: LogcatViewModel,
-    private val navHostController: NavHostController
+    private val navHostController: NavHostController,
+    private val context: Context
 ) {
 
     val searchSuggestions: Flow<List<String>>
         get() = logcatViewModel.searchSuggestions
 
-    val logcatUiUpdatePaused: StateFlow<Boolean>
-        get() = logcatViewModel.logcatUiUpdatePaused
+    val logcatStreamPaused: Flow<Boolean>
+        get() = logcatViewModel.logcatStreamPaused
+
+    val recordingLogs: Flow<Boolean>
+        get() = logcatViewModel.recordingLogs
 
     fun toggleLogcatFlowState() {
         logcatViewModel.toggleLogcatFlowState()
@@ -69,13 +76,26 @@ class TopBarState(
     fun clearAllRecentSearches() {
         logcatViewModel.clearAllRecentSearches()
     }
+
+    fun startRecordingLogs() {
+        context.startService(
+            Intent(context, LogRecordService::class.java).setAction(
+                LogRecordService.ACTION_RECORD_LOGS
+            )
+        )
+    }
+
+    fun stopRecordingLogs() {
+        context.stopService(Intent(context, LogRecordService::class.java))
+    }
 }
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun rememberTopBarState(
     logcatViewModel: LogcatViewModel,
-    navHostController: NavHostController = rememberAnimatedNavController()
-) = remember(logcatViewModel) {
-    TopBarState(logcatViewModel, navHostController)
+    navHostController: NavHostController = rememberAnimatedNavController(),
+    context: Context = LocalContext.current
+) = remember(logcatViewModel, context) {
+    TopBarState(logcatViewModel, navHostController, context)
 }

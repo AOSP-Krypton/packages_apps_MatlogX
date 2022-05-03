@@ -94,7 +94,7 @@ fun TopBar(
                 }
             }
             IconButton(onClick = { topBarState.toggleLogcatFlowState() }) {
-                val isPaused by topBarState.logcatUiUpdatePaused.collectAsState(false)
+                val isPaused by topBarState.logcatStreamPaused.collectAsState(false)
                 Icon(
                     painter = painterResource(
                         if (isPaused)
@@ -149,34 +149,48 @@ fun TopBarOverflowMenu(
         MenuItem(
             title = stringResource(id = R.string.clear_logs),
             iconContentDescription = stringResource(id = R.string.clear_logs_button_content_desc),
-            iconImageVector = Icons.Filled.Clear,
+            imageVector = Icons.Filled.Clear,
             onClick = {
                 menuExpanded = false
                 topBarState.clearLogs()
             }
         )
         MenuItem(
+            title = stringResource(id = R.string.log_level),
+            iconContentDescription = stringResource(id = R.string.log_level_button_content_desc),
+            imageVector = Icons.Filled.List,
+            onClick = {
+                menuExpanded = false
+                onShowLogLevelMenuRequest()
+            }
+        )
+        val recordingLogs by topBarState.recordingLogs.collectAsState(false)
+        MenuItem(
+            title = stringResource(id = if (!recordingLogs) R.string.record_logs else R.string.stop_recording),
+            iconContentDescription = stringResource(id = R.string.record_logs_button_content_desc),
+            painter = painterResource(id = if (!recordingLogs) R.drawable.ic_baseline_circle_24 else R.drawable.ic_baseline_stop_24),
+            onClick = {
+                menuExpanded = false
+                if (recordingLogs) {
+                    topBarState.stopRecordingLogs()
+                } else {
+                    topBarState.startRecordingLogs()
+                }
+            }
+        )
+        MenuItem(
             title = stringResource(id = R.string.share_logs),
             iconContentDescription = stringResource(id = R.string.share_button_content_desc),
-            iconImageVector = Icons.Filled.Share,
+            imageVector = Icons.Filled.Share,
             onClick = {
                 menuExpanded = false
                 onShareLogsRequest()
             }
         )
         MenuItem(
-            title = stringResource(id = R.string.log_level),
-            iconContentDescription = stringResource(id = R.string.log_level_button_content_desc),
-            iconImageVector = Icons.Filled.List,
-            onClick = {
-                menuExpanded = false
-                onShowLogLevelMenuRequest()
-            }
-        )
-        MenuItem(
             title = stringResource(id = R.string.save_zip),
             iconContentDescription = stringResource(id = R.string.save_zip_button_content_desc),
-            icon = painterResource(id = R.drawable.ic_baseline_folder_24),
+            painter = painterResource(id = R.drawable.ic_baseline_folder_24),
             onClick = {
                 menuExpanded = false
                 onSaveLogsRequest()
@@ -185,7 +199,7 @@ fun TopBarOverflowMenu(
         MenuItem(
             title = stringResource(id = R.string.settings),
             iconContentDescription = stringResource(id = R.string.clear_logs_button_content_desc),
-            iconImageVector = Icons.Filled.Settings,
+            imageVector = Icons.Filled.Settings,
             onClick = {
                 menuExpanded = false
                 topBarState.openSettings()

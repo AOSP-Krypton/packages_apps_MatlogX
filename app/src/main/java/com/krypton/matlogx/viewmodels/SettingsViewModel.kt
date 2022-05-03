@@ -45,6 +45,9 @@ class SettingsViewModel @Inject constructor(
     val textSize: Flow<Int>
         get() = settingsRepository.getTextSize()
 
+    val writeBufferSize: Flow<Int>
+        get() = settingsRepository.getWriteBufferSize()
+
     fun setLogcatBuffers(buffers: String) {
         viewModelScope.launch {
             settingsRepository.setLogcatBuffers(buffers)
@@ -66,6 +69,12 @@ class SettingsViewModel @Inject constructor(
     fun setTextSize(textSize: Int) {
         viewModelScope.launch {
             settingsRepository.setTextSize(textSize)
+        }
+    }
+
+    fun setWriteBufferSize(size: Int) {
+        viewModelScope.launch {
+            settingsRepository.setWriteBufferSize(size)
         }
     }
 }

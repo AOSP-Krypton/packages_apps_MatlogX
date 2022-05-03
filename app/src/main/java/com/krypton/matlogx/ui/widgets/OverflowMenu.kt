@@ -50,12 +50,12 @@ fun OverflowMenu(
 
 @Composable
 fun MenuItem(
-    modifier: Modifier = Modifier,
     title: String,
     iconContentDescription: String,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    icon: Painter? = null,
-    iconImageVector: ImageVector? = null,
+    painter: Painter? = null,
+    imageVector: ImageVector? = null,
     onClick: () -> Unit = {},
 ) {
     DropdownMenuItem(
@@ -63,12 +63,12 @@ fun MenuItem(
         enabled = enabled,
         leadingIcon = {
             when {
-                icon != null -> Icon(
-                    painter = icon,
+                painter != null -> Icon(
+                    painter = painter,
                     contentDescription = iconContentDescription
                 )
-                iconImageVector != null -> Icon(
-                    imageVector = iconImageVector,
+                imageVector != null -> Icon(
+                    imageVector = imageVector,
                     contentDescription = iconContentDescription
                 )
                 else -> Spacer(modifier = Modifier.size(24.dp))

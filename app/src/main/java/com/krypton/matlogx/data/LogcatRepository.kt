@@ -29,19 +29,25 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 
 @Singleton
 class LogcatRepository @Inject constructor(
     @ApplicationContext context: Context,
-    private val zipFileSaver: ZipFileSaver
+    private val logSaveHelper: LogSaveHelper
 ) {
 
     private val settingsDataStore = context.settingsDataStore
+    private val contentResolver = context.contentResolver
+
+    private val _recordingLogs = MutableStateFlow(false)
+    val recordingLogs: StateFlow<Boolean>
+        get() = _recordingLogs
+
+    val recordLogErrorChannel = Channel<Throwable>(1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     /**
      * Get an asynchronous stream of [LogInfo].
@@ -93,11 +99,69 @@ class LogcatRepository @Inject constructor(
         includeDeviceInfo: Boolean,
     ): Result<Uri> =
         withContext(Dispatchers.IO) {
-            zipFileSaver.saveZip(
+            logSaveHelper.saveZip(
                 LogcatReader.getRawLogs(getLogcatArgs(), tags, logLevel),
                 includeDeviceInfo,
             )
         }
+
+    suspend fun recordLogs() {
+        _recordingLogs.value = true
+        val recordingFileUriResult = withContext(Dispatchers.IO) {
+            logSaveHelper.getNewRecordingFileUri()
+        }
+        recordingFileUriResult.onFailure {
+            recordLogErrorChannel.send(it)
+            _recordingLogs.value = false
+            return
+        }
+        val outputStreamResult = withContext(Dispatchers.IO) {
+            runCatching {
+                contentResolver.openOutputStream(recordingFileUriResult.getOrThrow(), "wa")
+            }
+        }
+        outputStreamResult.onFailure {
+            recordLogErrorChannel.send(it)
+            _recordingLogs.value = false
+            return
+        }
+        val outputStream = outputStreamResult.getOrNull() ?: run {
+            recordLogErrorChannel.send(Throwable("Failed to open output stream"))
+            _recordingLogs.value = false
+            return
+        }
+        outputStream.bufferedWriter().use { writer ->
+            val writeBuffer = settingsDataStore.data.map { it.writeBufferSize }.first()
+            val logLevel = settingsDataStore.data.map { it.logLevel }.first()
+            val bufferedLogs = mutableListOf<String>()
+            try {
+                LogcatReader.readRawLogsAsFlow(
+                    getLogcatArgs(),
+                    null /* tags aren't supported yet*/,
+                    logLevel
+                ).flowOn(Dispatchers.IO)
+                    .collect {
+                        bufferedLogs.add(it)
+                        if (bufferedLogs.size >= writeBuffer) {
+                            bufferedLogs.forEach { log ->
+                                writer.write(log)
+                                writer.newLine()
+                            }
+                            writer.flush()
+                            bufferedLogs.clear()
+                        }
+                    }
+            } catch (e: Throwable) {
+                recordLogErrorChannel.send(e)
+                _recordingLogs.value = false
+                return
+            }
+        }
+    }
+
+    fun stopRecordingLogs() {
+        _recordingLogs.value = false
+    }
 
     private suspend fun getLogcatArgs(): Map<String, String?> {
         val buffers = settingsDataStore.data.map { it.logcatBuffers }.first()

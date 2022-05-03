@@ -16,6 +16,7 @@
 
 package com.krypton.matlogx.ui.screens
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -23,6 +24,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 
 import com.krypton.matlogx.R
 import com.krypton.matlogx.ui.preferences.*
@@ -60,12 +62,18 @@ fun SettingsScreen(
             )
         }
     ) { paddingValues ->
-        LazyColumn(contentPadding = paddingValues) {
+        LazyColumn(
+            contentPadding = PaddingValues(
+                top = paddingValues.calculateTopPadding(),
+                start = 24.dp,
+                end = 24.dp
+            )
+        ) {
             item {
                 PreferenceGroupHeader(title = stringResource(id = R.string.appearance))
             }
             item {
-                val textSize = settingsViewModel.textSize.collectAsState(initial = 0)
+                val textSize by settingsViewModel.textSize.collectAsState(initial = 0)
                 ListPreference(
                     title = stringResource(id = R.string.text_size),
                     entries = listOf(
@@ -73,18 +81,18 @@ fun SettingsScreen(
                         Entry(stringResource(id = R.string.medium), 12),
                         Entry(stringResource(id = R.string.large), 16),
                     ),
-                    value = textSize.value,
+                    value = textSize,
                     onEntrySelected = {
                         settingsViewModel.setTextSize(it)
                     }
                 )
             }
             item {
-                val expanded = settingsViewModel.expandedByDefault.collectAsState(initial = false)
+                val expanded by settingsViewModel.expandedByDefault.collectAsState(initial = false)
                 CheckBoxPreference(
                     title = stringResource(id = R.string.expand_logs_by_default),
                     summary = stringResource(id = R.string.expand_logs_summary),
-                    checked = expanded.value,
+                    checked = expanded,
                     onCheckedChange = {
                         settingsViewModel.setExpandedByDefault(it)
                     }
@@ -95,13 +103,13 @@ fun SettingsScreen(
             }
             item {
                 val buffers = stringArrayResource(id = R.array.buffers).toList()
-                val selectedBuffers = settingsViewModel.logcatBuffers.map { it.split(",") }
+                val selectedBuffers by settingsViewModel.logcatBuffers.map { it.split(",") }
                     .collectAsState(initial = emptyList())
                 MultiSelectListPreference(
                     title = stringResource(id = R.string.log_buffers),
-                    summary = selectedBuffers.value.joinToString(","),
+                    summary = selectedBuffers.joinToString(","),
                     entries = buffers.map { Entry(it, it) },
-                    values = selectedBuffers.value,
+                    values = selectedBuffers,
                     onValuesUpdated = {
                         settingsViewModel.setLogcatBuffers(it.joinToString(","))
                     },
@@ -109,20 +117,34 @@ fun SettingsScreen(
                 )
             }
             item {
-                val limit = settingsViewModel.logcatSizeLimit.collectAsState(0)
+                val limit by settingsViewModel.logcatSizeLimit.collectAsState(0)
                 EditTextPreference(
                     title = stringResource(id = R.string.log_display_limit),
-                    summary = if (limit.value == 0)
+                    summary = if (limit == 0)
                         stringResource(id = R.string.log_display_limit_summary_no_limit)
                     else
                         stringResource(
                             id = R.string.log_display_limit_summary_placeholder,
-                            limit.value
+                            limit
                         ),
-                    value = limit.value.toString(),
+                    value = limit.toString(),
                     onValueSelected = {
                         settingsViewModel.setLogcatSizeLimit(it.toInt())
                     }
+                )
+            }
+            item {
+                val size by settingsViewModel.writeBufferSize.collectAsState(0)
+                DiscreteSeekBarPreference(
+                    title = stringResource(id = R.string.write_buffer_size),
+                    summary = stringResource(id = R.string.write_buffer_size_summary),
+                    min = 0,
+                    max = 1000,
+                    value = size,
+                    onProgressChanged = {
+                        settingsViewModel.setWriteBufferSize(it)
+                    },
+                    showProgressText = true
                 )
             }
         }

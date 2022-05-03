@@ -40,7 +40,7 @@ fun Preference(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = clickable, onClick = onClick)
-            .padding(start = 24.dp, top = 12.dp, bottom = 12.dp),
+            .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (startWidget != null) {
@@ -51,9 +51,7 @@ fun Preference(
             )
         }
         Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 24.dp),
+            modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.SpaceEvenly,
             horizontalAlignment = Alignment.Start
         ) {

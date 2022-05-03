@@ -148,7 +148,8 @@ fun rememberLogcatScreenState(
     context: Context = LocalContext.current,
     topBarState: TopBarState = rememberTopBarState(
         logcatViewModel,
-        navHostController
+        navHostController,
+        context
     ),
 ) = remember(
     logcatViewModel,

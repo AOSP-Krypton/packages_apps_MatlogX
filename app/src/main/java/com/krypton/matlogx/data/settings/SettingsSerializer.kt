@@ -33,6 +33,7 @@ object SettingsSerializer : Serializer<Settings> {
         .setIncludeDeviceInfo(SettingsDefaults.INCLUDE_DEVICE_INFO_DEFAULT)
         .setExpandedByDefault(SettingsDefaults.EXPANDED_DEFAULT)
         .setTextSize(SettingsDefaults.DEFAULT_TEXT_SIZE)
+        .setWriteBufferSize(SettingsDefaults.DEFAULT_WRITE_BUFFER_SIZE)
         .build()
 
     override suspend fun readFrom(input: InputStream): Settings {

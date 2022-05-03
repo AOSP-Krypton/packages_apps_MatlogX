@@ -42,7 +42,8 @@ object LogcatReader {
     private const val OPTION_DUMP = "-d"
 
     /**
-     * Read logcat with the given command line args.
+     * Read logcat with the given command line args and parse
+     * each line into a [LogInfo].
      *
      * @param args command line arguments for logcat.
      * @param tags a list of string tags to filter the logs.
@@ -61,6 +62,33 @@ object LogcatReader {
                         it.readLine()
                     }.getOrNull()?.let { line ->
                         emit(LogInfo.fromLine(line))
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Read logcat with the given command line args, and returns
+     * the stream as it is.
+     *
+     * @param args command line arguments for logcat.
+     * @param tags a list of string tags to filter the logs.
+     * @param logLevel the log level below which the logs should be discarded.
+     * @return a [Flow] of [LogInfo].
+     */
+    fun readRawLogsAsFlow(
+        args: Map<String, String?>? = null,
+        tags: List<String>? = null,
+        logLevel: String,
+    ): Flow<String> {
+        return flow {
+            getInputStream(args, tags, logLevel).bufferedReader().use {
+                while (true) {
+                    runCatching {
+                        it.readLine()
+                    }.getOrNull()?.let { line ->
+                        emit(line)
                     }
                 }
             }

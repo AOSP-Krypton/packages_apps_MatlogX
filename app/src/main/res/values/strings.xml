@@ -14,9 +14,7 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<resources xmlns:tools="http://schemas.android.com/tools"
-    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2"
-    tools:ignore="MissingTranslation">
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2" tools:ignore="MissingTranslation">
 
     <string name="app_name">MatlogX</string>
     <string name="grant_permissions">Grant permissions</string>
@@ -49,6 +47,11 @@
     <string name="search_bar_close_icon_content_desc">Close button in search bar</string>
     <string name="clear_recent_search_button_content_desc">Clear recent search query button</string>
     <string name="clear">Clear</string>
+    <string name="record_logs">Record logs</string>
+    <string name="record_logs_button_content_desc">Record logs button</string>
+    <string name="stop_recording">Stop recording</string>
+    <string name="recording_logs">Recording logs</string>
+    <string name="stop">Stop</string>
 
     <!-- Settings -->
     <string name="settings">Settings</string>
@@ -67,4 +70,8 @@
     <string name="medium">Medium</string>
     <string name="large">Large</string>
     <string name="settings_back_button_content_desc">Settings back button</string>
+    <string name="write_buffer_size">Write buffer size</string>
+    <string name="write_buffer_size_summary">
+        Number of log lines to keep in memory (while recording) before writing to disk. Bigger buffer would mean less frequent writes and vice versa.
+    </string>
 </resources>

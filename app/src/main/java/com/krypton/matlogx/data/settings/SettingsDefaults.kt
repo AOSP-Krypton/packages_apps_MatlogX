@@ -23,4 +23,5 @@ object SettingsDefaults {
     const val DEFAULT_BUFFERS = "main,system,crash"
     const val EXPANDED_DEFAULT = false
     const val DEFAULT_TEXT_SIZE = 12
+    const val DEFAULT_WRITE_BUFFER_SIZE = 200
 }

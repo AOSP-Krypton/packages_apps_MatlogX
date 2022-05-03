@@ -73,7 +73,7 @@ class LogcatViewModel @Inject constructor(
         get() = appRepository.searchSuggestions
 
     private val _logcatFlowSuspended = MutableStateFlow(false)
-    val logcatUiUpdatePaused: StateFlow<Boolean>
+    val logcatStreamPaused: StateFlow<Boolean>
         get() = _logcatFlowSuspended
 
     val includeDeviceInfo: Flow<Boolean>
@@ -84,6 +84,9 @@ class LogcatViewModel @Inject constructor(
 
     val logLevel: Flow<Int>
         get() = _logLevel.map { logLevelMap[it] ?: 0 }
+
+    val recordingLogs: StateFlow<Boolean>
+        get() = logcatRepository.recordingLogs
 
     fun init() {
         viewModelScope.launch {

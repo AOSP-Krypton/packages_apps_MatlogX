@@ -29,7 +29,7 @@ fun PreferenceGroupHeader(title: String) {
     Text(
         text = title,
         color = MaterialTheme.colorScheme.secondary,
-        modifier = Modifier.padding(start = 24.dp, top = 24.dp),
+        modifier = Modifier.padding(bottom = 12.dp, top = 24.dp),
         fontWeight = FontWeight.Bold
     )
 }
