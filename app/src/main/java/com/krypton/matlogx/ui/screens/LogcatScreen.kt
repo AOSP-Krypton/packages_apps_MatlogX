@@ -189,10 +189,15 @@ fun LogcatScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .nestedScroll(nestedScrollConnection),
-                    state = listState
+                    state = listState,
+                    userScrollEnabled = logcatStreamPaused
                 ) {
                     itemsIndexed(logcatList) { index, item ->
+                        if (index != 0) {
+                            Divider()
+                        }
                         LogItem(
+                            modifier = Modifier.animateContentSize(),
                             item = item,
                             onExpansionChanged = {
                                 logcatScreenState.expandItemAtIndex(index, it)
@@ -330,13 +335,16 @@ fun PermissionDialog(
 
 @OptIn(ExperimentalUnitApi::class)
 @Composable
-fun LogItem(item: LogcatListData, onExpansionChanged: (Boolean) -> Unit) {
+fun LogItem(
+    modifier: Modifier = Modifier,
+    item: LogcatListData,
+    onExpansionChanged: (Boolean) -> Unit
+) {
     val textSize = item.textSize.toFloat()
     val hasOnlyMessage = item.logInfo.hasOnlyMessage()
-    Divider()
     Column(
         verticalArrangement = Arrangement.Top,
-        modifier = Modifier
+        modifier = modifier
             .clickable(
                 enabled = true,
                 onClick = {
@@ -348,12 +356,12 @@ fun LogItem(item: LogcatListData, onExpansionChanged: (Boolean) -> Unit) {
         if (item.isExpanded && !hasOnlyMessage) {
             Row(verticalAlignment = Alignment.Top) {
                 Text(
-                    modifier = Modifier.weight(.25f),
+                    modifier = Modifier.weight(.3f),
                     text = item.logInfo.pid.toString(),
                     fontSize = TextUnit(textSize, TextUnitType.Sp)
                 )
                 Text(
-                    modifier = Modifier.weight(.75f),
+                    modifier = Modifier.weight(.7f),
                     text = item.logInfo.time.toString(),
                     fontSize = TextUnit(textSize, TextUnitType.Sp)
                 )
@@ -384,7 +392,7 @@ fun LogItem(item: LogcatListData, onExpansionChanged: (Boolean) -> Unit) {
                 )
             }
             Text(
-                modifier = Modifier.weight(if (hasOnlyMessage) 1f else .75f),
+                modifier = Modifier.weight(if (hasOnlyMessage) 1f else .7f),
                 text = item.logInfo.message.toString(),
                 maxLines = if (item.isExpanded) Int.MAX_VALUE else 1,
                 fontSize = TextUnit(textSize, TextUnitType.Sp),
