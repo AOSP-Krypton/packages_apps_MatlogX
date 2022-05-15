@@ -63,16 +63,9 @@ class LogcatActivity : ComponentActivity() {
         setContent {
             LogcatTheme {
                 val systemUiController = rememberSystemUiController()
-                val isSystemInDarkTheme = isSystemInDarkTheme()
                 with(systemUiController) {
-                    setStatusBarColor(
-                        MaterialTheme.colorScheme.primary,
-                        darkIcons = isSystemInDarkTheme
-                    )
-                    setNavigationBarColor(
-                        Color.Transparent,
-                        darkIcons = !isSystemInDarkTheme
-                    )
+                    setStatusBarColor(MaterialTheme.colorScheme.primary)
+                    setNavigationBarColor(MaterialTheme.colorScheme.surface)
                 }
                 val navHostController = rememberAnimatedNavController()
                 AnimatedNavHost(
