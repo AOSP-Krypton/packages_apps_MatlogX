@@ -22,13 +22,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.graphics.Color
+import androidx.hilt.navigation.compose.hiltViewModel
 
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -38,8 +36,6 @@ import com.krypton.matlogx.ui.screens.LogcatScreen
 import com.krypton.matlogx.ui.screens.SettingsScreen
 import com.krypton.matlogx.ui.states.rememberLogcatScreenState
 import com.krypton.matlogx.ui.theme.LogcatTheme
-import com.krypton.matlogx.viewmodels.LogcatViewModel
-import com.krypton.matlogx.viewmodels.SettingsViewModel
 
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -93,9 +89,8 @@ class LogcatActivity : ComponentActivity() {
                             }
                         },
                     ) {
-                        val logcatViewModel by viewModels<LogcatViewModel>()
                         val logcatScreenState = rememberLogcatScreenState(
-                            logcatViewModel,
+                            hiltViewModel(),
                             navHostController
                         )
                         LogcatScreen(
@@ -126,10 +121,7 @@ class LogcatActivity : ComponentActivity() {
                             }
                         }
                     ) {
-                        val settingsViewModel by viewModels<SettingsViewModel>()
-                        SettingsScreen(
-                            settingsViewModel = settingsViewModel,
-                        ) {
+                        SettingsScreen(hiltViewModel()) {
                             navHostController.popBackStack()
                         }
                     }
