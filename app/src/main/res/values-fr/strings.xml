@@ -19,8 +19,8 @@
     <string name="app_name">MatlogX</string>
     <string name="grant_permissions">Accorder des autorisations</string>
     <string name="how_to_grant">
-        L'application nécessite l'autorisation READ_LOGS pour lire le logcat du système.\n
-        Pour accorder l'autorisation, ouvrez adb et entrez la commande suivante (sans les guillemets) :\n
+        Lapplication nécessite l\'autorisation READ_LOGS pour lire le logcat du système.\n
+        Pour accorder l\'autorisation, ouvrez adb et entrez la commande suivante (sans les guillemets) :\n
         \"adb shell pm grant com.krypton.matlogx android.permission.READ_LOGS\"
     </string>
     <string name="adb_command">Commande ADB</string>
@@ -29,9 +29,9 @@
     <string name="search_hint">Journaux de recherche</string>
     <string name="log_level">Fichier de journalisation</string>
     <string name="save_zip">Enregistrer au format zip</string>
-    <string name="include_device_info">Inclure les informations sur l'appareil</string>
+    <string name="include_device_info">Inclure les informations sur l\'appareil</string>
     <string name="log_saved_successfully">Journal enregistré avec succès</string>
-    <string name="failed_to_save_log">Échec de l'enregistrement du journal</string>
+    <string name="failed_to_save_log">Échec de l\'enregistrement du journal</string>
     <string name="share_logs">Partager les journaux</string>
     <string name="save_logs">Enregistrer les journaux</string>
     <string name="clear_logs">Effacer les journaux</string>
@@ -42,40 +42,40 @@
     <string name="share_button_content_desc">Bouton Partager</string>
     <string name="log_level_button_content_desc">Bouton de niveau de journalisation</string>
     <string name="save_zip_button_content_desc">Bouton Enregistrer le zip</string>
-    <string name="scroll_up_fab_content_desc">Bouton d'action flottant pour faire défiler vers le haut</string>
-    <string name="scroll_down_fab_content_desc">Bouton d'action flottant pour faire défiler vers le bas</string>
+    <string name="scroll_up_fab_content_desc">Bouton d\'action flottant pour faire défiler vers le haut</string>
+    <string name="scroll_down_fab_content_desc">Bouton d\'action flottant pour faire défiler vers le bas</string>
     <string name="search_bar_close_icon_content_desc">Bouton Fermer dans la barre de recherche</string>
     <string name="clear_recent_search_button_content_desc">Bouton Effacer la requête de recherche récente</string>
     <string name="clear">Nettoyer</string>
     <string name="record_logs">Enregistrer les journaux</string>
     <string name="record_logs_button_content_desc">Bouton Enregistrer les journaux</string>
-    <string name="stop_recording">Arrête d'enregistrer</string>
-    <string name="recording_logs">Journaux d'enregistrement</string>
+    <string name="stop_recording">Arrête d\'enregistrer</string>
+    <string name="recording_logs">Journaux d\'enregistrement</string>
     <string name="stop">Stop</string>
     <string name="saved_logs">Journaux enregistrés</string>
     <string name="saved_logs_button_content_desc">Bouton Journaux enregistrés</string>
     <string name="activity_not_found">Aucune activité trouvée pour ouvrir le répertoire</string>
-    <string name="failed_to_open_directory">Impossible d'ouvrir le répertoire des journaux enregistrés</string>
+    <string name="failed_to_open_directory">Impossible d\'ouvrir le répertoire des journaux enregistrés</string>
 
     <!-- Settings -->
     <string name="settings">Réglages</string>
     <string name="configuration">Configuration</string>
-    <string name="log_display_limit">Limite d'affichage du journal</string>
+    <string name="log_display_limit">Limite d\'affichage du journal</string>
     <string name="log_display_limit_summary_placeholder">
         Afficher uniquement le dernier <xliff:g example="10000" id="limit">%1$d</xliff:g> journaux pour éviter de manquer de mémoire.
     </string>
-    <string name="log_display_limit_summary_no_limit">Aucune limite fixée. Attention, l'application finira par manquer de mémoire.</string>
+    <string name="log_display_limit_summary_no_limit">Aucune limite fixée. Attention, l\'application finira par manquer de mémoire.</string>
     <string name="log_buffers">Tampons de journal</string>
     <string name="appearance">Apparence</string>
     <string name="expand_logs_by_default">Développer les journaux par défaut</string>
-    <string name="expand_logs_summary">Afficher le message de journal complet, y compris le PID et l'horodatage</string>
+    <string name="expand_logs_summary">Afficher le message de journal complet, y compris le PID et l\'horodatage</string>
     <string name="text_size">Taille du texte</string>
     <string name="small">Petit</string>
     <string name="medium">Moyen</string>
     <string name="large">Grand</string>
     <string name="settings_back_button_content_desc">Bouton de retour des paramètres</string>
-    <string name="write_buffer_size">Taille du tampon d'écriture</string>
+    <string name="write_buffer_size">Taille du tampon d\'écriture</string>
     <string name="write_buffer_size_summary">
-        Nombre de lignes de journal à conserver en mémoire (pendant l'enregistrement) avant d'écrire sur le disque. Un tampon plus grand signifierait des écritures moins fréquentes et vice versa.
+        Nombre de lignes de journal à conserver en mémoire (pendant l\'enregistrement) avant d\'écrire sur le disque. Un tampon plus grand signifierait des écritures moins fréquentes et vice versa.
     </string>
 </resources>
