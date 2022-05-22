@@ -26,13 +26,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.dp
 
 import kotlin.math.ceil
 import kotlin.math.floor
 
-@OptIn(ExperimentalUnitApi::class)
 @Composable
 fun DiscreteSeekBarPreference(
     title: String,
