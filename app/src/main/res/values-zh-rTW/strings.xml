@@ -14,9 +14,7 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<resources xmlns:tools="http://schemas.android.com/tools"
-    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2"
-    tools:ignore="MissingTranslation">
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2" tools:ignore="MissingTranslation">
 
     <string name="app_name">MatlogX</string>
     <string name="grant_permissions">獲取許可權</string>
@@ -26,20 +24,45 @@
         "adb shell pm grant com.krypton.matlogx android.permission.READ_LOGS".
     </string>
     <string name="search_hint">搜尋日誌</string>
+    <string name="command">adb shell pm grant com.krypton.matlogx android.permission.READ_LOGS</string>
+    <string name="copied_to_clipboard">已複製到剪下板</string>
+    <string name="search_hint">搜尋日誌</string>
     <string name="log_level">日誌等級</string>
-    <string name="save_zip">儲存為 zip</string>
+    <string name="save_zip">儲存為 ZIP</string>
     <string name="include_device_info">包括裝置資訊</string>
     <string name="log_saved_successfully">日誌儲存成功</string>
     <string name="failed_to_save_log">無法儲存日誌</string>
+    <string name="share_logs">Share logs</string>
     <string name="save_logs">儲存日誌</string>
     <string name="clear_logs">清空日誌</string>
+    <string name="search_button_content_desc">選單內搜尋按鈕</string>
+    <string name="play_pause_button_content_desc">暫停/繼續按鈕</string>
+    <string name="menu_overflow_button">選單展開按鈕</string>
+    <string name="clear_logs_button_content_desc">清除日誌按鈕</string>
+    <string name="share_button_content_desc">分享按鈕</string>
+    <string name="log_level_button_content_desc">日誌等級按鈕</string>
+    <string name="save_zip_button_content_desc">儲存為 ZIP 按鈕</string>
+    <string name="scroll_up_fab_content_desc">浮動回到頂部按鈕</string>
+    <string name="scroll_down_fab_content_desc">浮動回到底部按鈕</string>
+    <string name="search_bar_close_icon_content_desc">搜尋欄關閉按鈕</string>
+    <string name="clear_recent_search_button_content_desc">清除最近搜尋查詢按鈕</string>
+    <string name="clear">清除</string>
+    <string name="record_logs">記錄日誌</string>
+    <string name="record_logs_button_content_desc">記錄日誌按鈕</string>
+    <string name="stop_recording">停止記錄</string>
+    <string name="recording_logs">記錄日誌中</string>
+    <string name="stop">停止</string>
+    <string name="saved_logs">已儲存的日誌</string>
+    <string name="saved_logs_button_content_desc">已儲存的日誌按鈕</string>
+    <string name="activity_not_found">未找到 DocumentsUI</string>
+    <string name="failed_to_open_directory">開啟日誌儲存目錄失敗</string>
 
     <!-- Settings -->
     <string name="settings">設定</string>
     <string name="configuration">配置</string>
     <string name="log_display_limit">日誌顯示行數</string>
-    <string name="log_display_limit_summary_placeholder">只顯示前 <xliff:g example="10000" id="limit">%1$d</xliff:g> 行來避免記憶體溢位。</string>
-    <string name="log_display_limit_summary_no_limit">沒有設定限制。請注意，該應用程式最終會導致記憶體溢位。</string>
+    <string name="log_display_limit_summary_placeholder">僅顯示前 <xliff:g example="10000" id="limit">%1$d</xliff:g> 行來避免記憶體溢位。</string>
+    <string name="log_display_limit_summary_no_limit">未設定限制。請注意：這最終將會導致裝置記憶體溢位。</string>
     <string name="log_buffers">日誌緩衝區</string>
     <string name="appearance">外觀</string>
     <string name="expand_logs_by_default">預設展開日誌</string>
@@ -48,4 +71,9 @@
     <string name="small">小</string>
     <string name="medium">中</string>
     <string name="large">大</string>
+    <string name="settings_back_button_content_desc">設定返回按鈕</string>
+    <string name="write_buffer_size">寫入緩衝區大小</string>
+    <string name="write_buffer_size_summary">
+        在寫到儲存前，保留在記憶體中的日誌行數（在記錄時）。更大的緩衝區將意味著更少的寫入次數，反之亦然。
+    </string>
 </resources>
