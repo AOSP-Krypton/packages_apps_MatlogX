@@ -246,22 +246,24 @@ class LogcatViewModel @Inject constructor(
             }
             val sizeLimit = settingsRepository.getLogcatSizeLimit().first()
             val logsToDrop = (logs.size - sizeLimit).coerceAtLeast(0)
-            withContext(Dispatchers.Default) {
-                listMutex.withLock {
-                    logList.addAll(
-                        logs.subList(
-                            logsToDrop,
-                            logs.lastIndex
-                        ).filter {
-                            it.hasString(cachedQuery)
-                        }.map {
-                            LogcatListData(it, isExpanded, textSize)
-                        }
-                    )
+            if (logs.isNotEmpty()) {
+                withContext(Dispatchers.Default) {
+                    listMutex.withLock {
+                        logList.addAll(
+                            logs.subList(
+                                logsToDrop,
+                                logs.lastIndex
+                            ).filter {
+                                it.hasString(cachedQuery)
+                            }.map {
+                                LogcatListData(it, isExpanded, textSize)
+                            }
+                        )
+                    }
                 }
+                // Let's free some memory
+                logs.clear()
             }
-            // Let's free some memory
-            logs.clear()
             _loadingData.value = false
             notifyDataChanged()
             delay(1000)
