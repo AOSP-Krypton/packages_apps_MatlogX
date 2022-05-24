@@ -32,7 +32,7 @@
     <string name="include_device_info">包括裝置資訊</string>
     <string name="log_saved_successfully">日誌儲存成功</string>
     <string name="failed_to_save_log">無法儲存日誌</string>
-    <string name="share_logs">Share logs</string>
+    <string name="share_logs">分享日誌</string>
     <string name="save_logs">儲存日誌</string>
     <string name="clear_logs">清空日誌</string>
     <string name="search_button_content_desc">選單內搜尋按鈕</string>
